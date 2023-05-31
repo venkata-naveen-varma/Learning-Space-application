@@ -1,0 +1,10 @@
+{% extends "base_loggedIn.html" %}
+
+{% block body %}
+    <a href="{% url 'institution_home' %}">Home</a>
+    <h1>Institution Home</h1>
+    <a href="{% url 'student_signup' %}">Register Student</a>
+    <a href="{% url 'instructor_signup' %}">Register Instructor</a>
+
+    <br> <br> {{ msg }}
+{% endblock %}
