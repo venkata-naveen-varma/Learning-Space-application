@@ -13,6 +13,17 @@ class Institution(models.Model):
     name = models.CharField(max_length=200)
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
 
+class Subscription(models.Model):
+    currency_choices = [
+        ('CAD', 'CANADA'),
+        ('USD', 'AMERICA')
+    ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    amount_paid = models.DecimalField(default=0, max_digits=10, decimal_places=2)
+    currency = models.CharField(choices=currency_choices, default='CAD', max_length=3)
+    is_basic = models.BooleanField(default=False)
+    is_premium = models.BooleanField(default=False)
+
 class UserInstitutionRelation(models.Model):
     institution = models.ForeignKey(Institution, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
