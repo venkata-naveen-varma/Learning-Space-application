@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block body %}
+    <h1>Payment Details</h1>
+    Username: {{ name }} <br> <br>
+    Email: {{ email }} <br> <br>
+    Plan: {{ plan }} <br> <br>
+    Amount: {{ amount }} <br> <br>
+    Currency: {{ currency }} <br> <br>
+    <form action="{% url 'institution_signup' %}" method="POST"> {% csrf_token %}
+        <button type="submit">Pay</button> &nbsp;
+        <a href="{% url 'home' %}">Cancel</a>
+    </form>
+{% endblock %}

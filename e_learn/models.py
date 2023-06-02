@@ -30,6 +30,7 @@ class UserInstitutionRelation(models.Model):
 
 class Course(models.Model):
     name = models.CharField(max_length=60)
+    description = models.TextField(default=None, null=True, blank=True)
     # Institution that created the course
     institution = models.ForeignKey(Institution, on_delete=models.CASCADE)
 

@@ -2,7 +2,7 @@ from django.shortcuts import render, HttpResponse, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .models import User, Institution, Course, UserCourseRelation, Assignment, AssignmentGrades, UserInstitutionRelation
+from .models import User, Institution, Course, UserCourseRelation, Assignment, AssignmentGrades, UserInstitutionRelation, Subscription
 
 def home(request):
     """ Dashboard of the application """
@@ -12,13 +12,19 @@ def signup_func(request, user_type):
     """function to perform registration operation for a new user"""
     if request.method == 'POST':
         if user_type == "institution":
-            new_name = request.POST.get('name')
+            new_name = request.session["institution_details"]["name"]
+            new_email = request.session["institution_details"]["email"]
+            new_password1 = request.session["institution_details"]["password"]
+            new_password2 = new_password1
+            amount = request.session["institution_details"]["amount"]
+            currency = request.session["institution_details"]["currency"]
+            del request.session["institution_details"]
         else:
             new_first_name = request.POST.get('first_name')
             new_last_name = request.POST.get('last_name')
-        new_email = request.POST.get('email')
-        new_password1 = request.POST.get('password1')
-        new_password2 = request.POST.get('password2')
+            new_password1 = request.POST.get('password1')
+            new_password2 = request.POST.get('password2')
+            new_email = request.POST.get('email')
 
         if new_password1 != new_password2:
             if user_type == "institution":
@@ -33,6 +39,8 @@ def signup_func(request, user_type):
                 new_user.save()
                 new_institution = Institution(name=new_name, user=new_user)
                 new_institution.save()
+                new_subscription = Subscription(user=new_user, amount_paid=amount, currency=currency, is_basic=True)
+                new_subscription.save()
                 return render(request, 'login.html')
             elif user_type == "student":
                 new_user = User(first_name=new_first_name, last_name=new_last_name, email=new_email, password=new_password1, is_student=True, username=new_email)
@@ -67,6 +75,35 @@ def instructor_signup(request):
 def institution_signup(request):
     """ Create a new Institution, path='institution/signup' """
     return signup_func(request, "institution")
+
+def payment(request):
+    """ Validate institution details and Payment gateway page, path='payment' """
+    if request.method == 'POST':
+        new_name = request.POST.get('name')
+        new_password1 = request.POST.get('password1')
+        new_password2 = request.POST.get('password2')
+        currency = request.POST.get('currency')
+        try:
+            name_found = Institution.objects.get(name=new_name)
+        except Exception as e:
+            name_found = None
+        if name_found is None:
+            if new_password1 == new_password2:
+                plan = request.POST.get('plan')
+                if plan == "basic":
+                    amount_to_be_paid = 1000
+                else:
+                    amount_to_be_paid = 1500
+                if currency == 'USD':
+                    amount_to_be_paid = amount_to_be_paid*0.74
+                institution_details = {"name": request.POST.get('name'), "email": request.POST.get('email'), "password": request.POST.get('password1'), "amount": amount_to_be_paid, "plan": plan, "currency": currency}
+                request.session["institution_details"] = institution_details
+                return render(request, 'payment.html', institution_details)
+            else:
+                return render(request, 'institution_signup.html', {'msg': "Passwords do not match!!!"})
+        else:
+            return render(request, 'institution_signup.html', {'msg': "Institution name already exists! Try a different name!"})
+    return render(request, 'institution_signup.html')
 
 def login_user(request):
     """ Login for both Students and Instructors, path='login' """
@@ -115,6 +152,31 @@ def instructor_home(request):
     """ Instructor's Home Page, path=instructor/home """
     return render(request, 'instructor_home.html')
 
-def view_users(request):
-    """Shows all the users details in the Users model, path='users/view'"""
-    return render(request, 'view_users.html', {'user_lst': User.objects.all()})
+@login_required(login_url='institution_login')
+def create_course(request):
+    """ Add a new Course. Operation is to be done only by an institution, path='course/create' """
+    if request.method == 'POST':
+        course_name = request.POST.get('name')
+        course_description = request.POST.get('course_description')
+        try:
+            course_found = Course.objects.get(name=course_name)
+        except Exception as e:
+            course_found = None
+        current_institution = Institution.objects.get(user=request.user)
+        if course_found is None:
+            new_course = Course(name=course_name, description=course_description, institution=current_institution)
+            new_course.save()
+            return render(request, 'institution_home.html', {'msg': "Course created successfully!"})
+        else:
+            return render(request, 'create_course.html', {'msg': "Course name already exists! Try a different name!"})
+    else:
+        return render(request, 'create_course.html')
+
+# @login_required(login_url='institution_login')
+# def all_courses(request):
+#     """ Listing all courses of an Institution """
+#     list_of_courses =
+#
+# def add_student_to_course(request):
+#     """ Add a student to a course, path='institution/course_student'"""
+#     return render(request, '.html', {'user_lst': User.objects.all()})
