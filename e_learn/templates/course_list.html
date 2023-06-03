@@ -1,0 +1,27 @@
+{% extends "base_loggedIn.html" %}
+
+{% block body %}
+    <a href="{% url 'institution_home' %}">Home</a>
+    <h1>Courses</h1>
+    {% if course_exist %}
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col" style="border: 1px solid black;">Course ID</th>
+                    <th scope="col" style="border: 1px solid black;">Course Name</th>
+                    <th scope="col" style="border: 1px solid black;"> Description </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in course_list %}
+                    <tr>
+                        <td style="border: 1px solid black; padding: 5px" align="center">{{ course.id }}</td>
+                        <td style="border: 1px solid black; padding: 5px" align="center">{{ course.name }}</td>
+                        <td style="border: 1px solid black; padding: 5px" align="center">{{ course.description }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+    <br> <br> {{ msg }}
+{% endblock %}

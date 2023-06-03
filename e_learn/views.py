@@ -25,14 +25,28 @@ def signup_func(request, user_type):
             new_password1 = request.POST.get('password1')
             new_password2 = request.POST.get('password2')
             new_email = request.POST.get('email')
+        try:
+            username_exists = User.objects.get(username=new_email)
+        except Exception as e:
+            username_exists = None
+
+        if username_exists is not None:
+            msg = {'msg': "Username/Email already exists!"}
+            if user_type == "institution":
+                return render(request, 'institution_signup.html', msg)
+            elif user_type == "student":
+                return render(request, 'student_signup.html', msg)
+            else:
+                return render(request, 'instructor_signup.html', msg)
 
         if new_password1 != new_password2:
+            msg = {'msg': "Passwords do not match!"}
             if user_type == "institution":
-                return render(request, 'institution_signup.html', {'msg': "Passwords do not match!!!"})
+                return render(request, 'institution_signup.html', msg)
             elif user_type == "student":
-                return render(request, 'student_signup.html', {'msg': "Passwords do not match!!!"})
+                return render(request, 'student_signup.html', msg)
             else:
-                return render(request, 'instructor_signup.html', {'msg': "Passwords do not match!!!"})
+                return render(request, 'instructor_signup.html', msg)
         else:
             if user_type == "institution":
                 new_user = User(first_name=new_name, username=new_email, email=new_email, password=new_password1, is_institution=True)
@@ -46,14 +60,14 @@ def signup_func(request, user_type):
                 new_user = User(first_name=new_first_name, last_name=new_last_name, email=new_email, password=new_password1, is_student=True, username=new_email)
                 new_user.save()
                 institution_obj = Institution.objects.get(user=request.user)
-                new_relation = UserInstitutionRelation(institution=institution_obj, user=new_user)
+                new_relation = UserInstitutionRelation(institution=institution_obj, user=new_user, is_student=True)
                 new_relation.save()
                 return render(request, 'institution_home.html', {'msg': "Student Registered Successfully!"})
             else:
                 new_user = User(first_name=new_first_name, last_name=new_last_name, email=new_email, password=new_password1, is_instructor=True, username=new_email)
                 new_user.save()
                 institution_obj = Institution.objects.get(user=request.user)
-                new_relation = UserInstitutionRelation(institution=institution_obj, user=new_user)
+                new_relation = UserInstitutionRelation(institution=institution_obj, user=new_user, is_instructor=True)
                 new_relation.save()
                 return render(request, 'institution_home.html', {'msg': "Instructor Registered Successfully!"})
     else:
@@ -80,23 +94,24 @@ def payment(request):
     """ Validate institution details and Payment gateway page, path='payment' """
     if request.method == 'POST':
         new_name = request.POST.get('name')
+        new_email = request.POST.get('email')
         new_password1 = request.POST.get('password1')
         new_password2 = request.POST.get('password2')
         currency = request.POST.get('currency')
         try:
-            name_found = Institution.objects.get(name=new_name)
+            username_found = User.objects.get(username=new_email)
         except Exception as e:
-            name_found = None
-        if name_found is None:
+            username_found = None
+        if username_found is None:
             if new_password1 == new_password2:
                 plan = request.POST.get('plan')
                 if plan == "basic":
-                    amount_to_be_paid = 1000
+                    amount_to_be_paid = 2000
                 else:
-                    amount_to_be_paid = 1500
+                    amount_to_be_paid = 3500
                 if currency == 'USD':
                     amount_to_be_paid = amount_to_be_paid*0.74
-                institution_details = {"name": request.POST.get('name'), "email": request.POST.get('email'), "password": request.POST.get('password1'), "amount": amount_to_be_paid, "plan": plan, "currency": currency}
+                institution_details = {"name": new_name, "email": new_email, "password": new_password1, "amount": amount_to_be_paid, "plan": plan, "currency": currency}
                 request.session["institution_details"] = institution_details
                 return render(request, 'payment.html', institution_details)
             else:
@@ -172,11 +187,51 @@ def create_course(request):
     else:
         return render(request, 'create_course.html')
 
-# @login_required(login_url='institution_login')
-# def all_courses(request):
-#     """ Listing all courses of an Institution """
-#     list_of_courses =
-#
+@login_required(login_url='institution_login')
+def course_list(request):
+    """ Listing all courses of an Institution, path='course/list """
+    try:
+        current_institution = Institution.objects.get(user=request.user)
+    except Exception as e:
+        return render(request, 'institution_home.html', {'msg': 'Institution details not found!'})
+    try:
+        course_lst = Course.objects.filter(institution=current_institution)
+        return render(request, 'course_list.html', {'course_list': course_lst, 'course_exist': True})
+    except Exception as e:
+        return render(request, 'institution_home.html', {'msg': 'Course not created yet, try creating a new course!'})
+
+@login_required(login_url='institution_login')
+def student_list(request):
+    """ Listing all students of an Institution, path='student/list """
+    try:
+        current_institution = Institution.objects.get(user=request.user)
+    except Exception as e:
+        return render(request, 'institution_home.html', {'msg': 'Institution details not found!'})
+    try:
+        details_lst = UserInstitutionRelation.objects.filter(institution=current_institution, is_student=True)
+        student_lst = []
+        for i in details_lst:
+            student_lst.append(i.user)
+        return render(request, 'institution_users_list.html', {'user_list': student_lst, 'student_exist': True})
+    except Exception as e:
+        return render(request, 'institution_home.html', {'msg': 'Students not registered yet, try registering a new student!'})
+
+@login_required(login_url='institution_login')
+def instructor_list(request):
+    """ Listing all instructors of an Institution, path='instructor/list """
+    try:
+        current_institution = Institution.objects.get(user=request.user)
+    except Exception as e:
+        return render(request, 'institution_home.html', {'msg': 'Institution details not found!'})
+    try:
+        details_lst = UserInstitutionRelation.objects.filter(institution=current_institution, is_instructor=True)
+        instructor_lst = []
+        for i in details_lst:
+            instructor_lst.append(i.user)
+        return render(request, 'institution_users_list.html', {'user_list': instructor_lst, 'instructor_exist': True})
+    except Exception as e:
+        return render(request, 'institution_home.html', {'msg': 'Students not registered yet, try registering a new student!'})
+
 # def add_student_to_course(request):
 #     """ Add a student to a course, path='institution/course_student'"""
 #     return render(request, '.html', {'user_lst': User.objects.all()})

@@ -27,6 +27,8 @@ class Subscription(models.Model):
 class UserInstitutionRelation(models.Model):
     institution = models.ForeignKey(Institution, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    is_student = models.BooleanField(default=False)
+    is_instructor = models.BooleanField(default=False)
 
 class Course(models.Model):
     name = models.CharField(max_length=60)

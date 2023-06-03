@@ -1,0 +1,36 @@
+{% extends "base_loggedIn.html" %}
+
+{% block body %}
+    <a href="{% url 'institution_home' %}">Home</a>
+
+    {% if student_exist %}
+        <h1>Students</h1>
+    {% else %}
+        <h1>Instructors</h1>
+    {% endif %}
+
+    {% if student_exist or instructor_exist %}
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col" style="border: 1px solid black;"> ID </th>
+                    <th scope="col" style="border: 1px solid black;"> First Name </th>
+                    <th scope="col" style="border: 1px solid black;"> Last Name </th>
+                    <th scope="col" style="border: 1px solid black;"> Email </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in user_list %}
+                    <tr>
+                        <td style="border: 1px solid black;padding: 5px" align="center">{{ user.id }}</td>
+                        <td style="border: 1px solid black;padding: 5px" align="center">{{ user.first_name }}</td>
+                        <td style="border: 1px solid black;padding: 5px" align="center">{{ user.last_name }}</td>
+                        <td style="border: 1px solid black;padding: 5px" align="center">{{ user.email }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    <br> <br> {{ msg }}
+{% endblock %}
