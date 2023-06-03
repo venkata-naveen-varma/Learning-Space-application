@@ -3,5 +3,24 @@
 {% block body %}
     <a href="{% url 'student_home' %}">Home</a>
     <h1>Student Home</h1>
-    <a href=""> Courses </a>
+    {% if course_exist %}
+        <h4>Courses</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col" style="border: 1px solid black;">Course ID</th>
+                    <th scope="col" style="border: 1px solid black;">Course Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in course_list %}
+                    <tr>
+                        <td style="border: 1px solid black; padding: 5px" align="center">{{ course.id }}</td>
+                        <td style="border: 1px solid black; padding: 5px" align="center">{{ course.name }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+    <br> <br> {{ msg }}
 {% endblock %}

@@ -157,15 +157,32 @@ def institution_home(request):
     """ Institution's Home Page, path=institution/home """
     return render(request, 'institution_home.html')
 
+def user_courses(request):
+    """ function to get all courses of a user """
+    try:
+        relation_lst = UserCourseRelation.objects.filter(user=request.user)
+        courses_lst = []
+        for c in relation_lst:
+            courses_lst.append(c.course)
+        return courses_lst
+    except Exception as e:
+        return None
+
 @login_required(login_url='login')
 def student_home(request):
     """ Student's Home Page, path='student/home' """
-    return render(request, 'student_home.html')
+    courses_lst = user_courses(request)
+    if courses_lst is None or len(courses_lst) == 0:
+        return render(request, 'student_home.html', {'msg': "You don't have any courses to display."})
+    return render(request, 'student_home.html', {'course_list': courses_lst, 'course_exist': True})
 
 @login_required(login_url='login')
 def instructor_home(request):
     """ Instructor's Home Page, path=instructor/home """
-    return render(request, 'instructor_home.html')
+    courses_lst = user_courses(request)
+    if courses_lst is None:
+        return render(request, 'instructor_home.html', {'msg': "You don't have any courses to display."})
+    return render(request, 'instructor_home.html', {'course_list': courses_lst, 'course_exist': True})
 
 @login_required(login_url='institution_login')
 def create_course(request):
