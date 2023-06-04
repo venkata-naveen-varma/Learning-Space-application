@@ -1,0 +1,62 @@
+{% extends "base_loggedIn.html" %}
+
+{% block body %}
+    <a href="{% url 'institution_home' %}">Home</a>
+    <h3> Course: {{ course_details.name }}</h3>
+    <p>Desription: {{ course_details.description }}</p>
+    <a href="{% url 'add_students_to_course' %}?course_id={{ course_details.id }}&method='GET'">Add students to the course</a> <br>
+    {% if instructor_exists %}
+        <h5>Instructor</h5>
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col" style="border: 1px solid black;"> ID </th>
+                    <th scope="col" style="border: 1px solid black;"> First Name </th>
+                    <th scope="col" style="border: 1px solid black;"> Last Name </th>
+                    <th scope="col" style="border: 1px solid black;"> Email </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="border: 1px solid black;padding: 5px" align="center">{{ instructor.id }}</td>
+                    <td style="border: 1px solid black;padding: 5px" align="center">{{ instructor.first_name }}</td>
+                    <td style="border: 1px solid black;padding: 5px" align="center">{{ instructor.last_name }}</td>
+                    <td style="border: 1px solid black;padding: 5px" align="center">{{ instructor.email }}</td>
+                </tr>
+            </tbody>
+        </table>
+    {% elif students_exists %}
+        <br> This course does not have any Instructor assigned yet. <br>
+    {% endif %}
+
+    {% if students_exists %}
+        <h5>Students</h5>
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col" style="border: 1px solid black;"> ID </th>
+                    <th scope="col" style="border: 1px solid black;"> First Name </th>
+                    <th scope="col" style="border: 1px solid black;"> Last Name </th>
+                    <th scope="col" style="border: 1px solid black;"> Email </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in students_lst %}
+                    <tr>
+                        <td style="border: 1px solid black;padding: 5px" align="center">{{ user.id }}</td>
+                        <td style="border: 1px solid black;padding: 5px" align="center">{{ user.first_name }}</td>
+                        <td style="border: 1px solid black;padding: 5px" align="center">{{ user.last_name }}</td>
+                        <td style="border: 1px solid black;padding: 5px" align="center">{{ user.email }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% elif instructor_exists %}
+        <br> This course does not have any students enrolled yet. <br>
+    {% endif %}
+
+    {% if msg %}
+        <br> {{ msg }} <br>
+        <br> <a href="{% url 'add_instructor_to_course' %}?course_id={{ course_details.id }}">Assign an instructor to the course</a> <br>
+    {% endif %}
+{% endblock %}

@@ -21,4 +21,7 @@ urlpatterns = [
 
     path('course/create', views.create_course, name='create_course'),
     path('course/list', views.course_list, name='course_list'),
+    path('course/details-all', views.display_course_data, name='complete_course_details'),
+    path('course/add-students', views.display_add_students_to_course, name='add_students_to_course'),
+    path('course/add-insturctor', views.display_add_instructor_to_course, name='add_instructor_to_course'),
 ]
