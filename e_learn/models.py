@@ -40,6 +40,8 @@ class UserCourseRelation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     final_grade = models.IntegerField(blank=True, null=True)
+    is_student = models.BooleanField(default=False)
+    is_instructor = models.BooleanField(default=False)
 
 class Notes(models.Model):
     name = models.TextField()

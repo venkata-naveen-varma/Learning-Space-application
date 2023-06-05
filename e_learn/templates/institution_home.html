@@ -2,11 +2,11 @@
 
 {% block body %}
     <a href="{% url 'institution_home' %}">Home</a>
+    <a href="{% url 'course_list' %}">Courses</a>
     <h1>Institution Home</h1>
     <a href="{% url 'student_signup' %}">Register Student</a> <br>
     <a href="{% url 'instructor_signup' %}">Register Instructor</a> <br>
     <a href="{% url 'create_course' %}">Create Course</a> <br>
-    <a href="{% url 'course_list' %}">List Of Courses</a> <br>
     <a href="{% url 'student_list' %}">List Of Students</a> <br>
     <a href="{% url 'instructor_list' %}">List Of Instructors</a> <br>
     <br> <br> {{ msg }}

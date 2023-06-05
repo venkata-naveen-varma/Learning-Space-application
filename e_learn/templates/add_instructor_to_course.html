@@ -1,16 +1,15 @@
 {% extends "base_loggedIn.html" %}
 
 {% block body %}
-    <a href="{% url 'complete_course_details' %}?course_id={{ course_details.id }}">Back</a>
     <a href="{% url 'institution_home' %}">Home</a>
     <a href="{% url 'course_list' %}">Courses</a>
-    <h3> Add Student to {{ course_details.name }}</h3>
+    <h3> Add Instructor to {{ course_details.name }}</h3>
     {% if msg %}
         <br> {{ msg }} <br>
     {% endif %}
 
-    {% if student_exists %}
-        <h4>Students</h4>
+    {% if instructor_exists %}
+        <h4>Instructors</h4>
         <table>
             <thead>
                 <tr>
@@ -22,17 +21,17 @@
                 </tr>
             </thead>
             <tbody>
-                {% for user in students_lst %}
+                {% for user in instructors_lst %}
                     <tr>
                         <td style="border: 1px solid black;padding: 5px" align="center">{{ user.id }}</td>
                         <td style="border: 1px solid black;padding: 5px" align="center">{{ user.first_name }}</td>
                         <td style="border: 1px solid black;padding: 5px" align="center">{{ user.last_name }}</td>
                         <td style="border: 1px solid black;padding: 5px" align="center">{{ user.email }}</td>
                         <td style="border: 1px solid black;padding: 5px" align="center">
-                            <form action="{% url 'add_students_to_course' %}" method="POST"> {% csrf_token %}
+                            <form action="{% url 'add_instructor_to_course' %}" method="POST"> {% csrf_token %}
                                 <input type="hidden" value="{{ user.id }}" name="user_id"/>
                                 <input type="hidden" value="{{ course_details.id }}" name="course_id"/>
-                                <button type="submit">Add</button>
+                                <button type="submit">Assign</button>
                             </form>
                         </td>
                     </tr>

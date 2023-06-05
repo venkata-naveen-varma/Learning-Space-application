@@ -259,7 +259,8 @@ def course_users(course_id):
         for relation in lst_user_relations:
             if relation.user.is_instructor:
                 instructor = relation.user
-            students_lst.append(relation.user)
+            else:
+                students_lst.append(relation.user)
         if len(students_lst) == 0 and instructor is None:
             return None
         return {"course": course, "students_lst": students_lst, "instructor": instructor}
@@ -270,6 +271,13 @@ def course_users(course_id):
 def display_course_data(request):
     """ Getting all users of a course and course details to display to institution, path='course/details-all' """
     course_id = request.GET.get('course_id')
+    send_data = {}
+    try:
+        if course_id is None:
+            course_id = request.session["course_id"]
+            del request.session["course_id"]
+    except Exception as e:
+        return redirect('logout')
     data = course_users(course_id)
     students_exists = True
     instructor_exists = True
@@ -280,22 +288,27 @@ def display_course_data(request):
         instructor_exists = False
     if len(data["students_lst"]) == 0:
         students_exists = False
-    return render(request, "course_data_to_institution.html", {'course_details': data["course"], 'students_lst': data["students_lst"], 'instructor': data["instructor"], 'instructor_exists': instructor_exists, 'students_exists': students_exists})
+    send_data = {'course_details': data["course"], 'students_lst': data["students_lst"], 'instructor': data["instructor"], 'instructor_exists': instructor_exists, 'students_exists': students_exists}
+    return render(request, "course_data_to_institution.html", send_data)
 
-def institution_students(request):
-    """ function to get a list of all students in an institution """
+def institution_users(request, user_type):
+    """ function to get a list of all students or instructors in an institution """
     current_institution = Institution.objects.get(user=request.user)
-    students_exist = False
-    student_lst = []
+    users_exist = False
+    users_lst = []
     try:
-        details_lst = UserInstitutionRelation.objects.filter(institution=current_institution, is_student=True)
+        if user_type == "student":
+            details_lst = UserInstitutionRelation.objects.filter(institution=current_institution, is_student=True)
+        else:
+            details_lst = UserInstitutionRelation.objects.filter(institution=current_institution, is_instructor=True)
         for i in details_lst:
-            student_lst.append(i.user)
-        if len(student_lst) != 0:
-            students_exist = True
-        return {"students_exist": students_exist, "student_lst": student_lst}
+            users_lst.append(i.user)
+        if len(users_lst) != 0:
+            users_exist = True
+        return {"users_exist": users_exist, "users_lst": users_lst}
     except Exception as e:
-        return {"students_exist": students_exist, "student_lst": student_lst}
+        return {"users_exist": users_exist, "users_lst": users_lst}
+
 
 @login_required(login_url="institution_login")
 def display_add_students_to_course(request):
@@ -306,32 +319,75 @@ def display_add_students_to_course(request):
         user_id = request.POST.get('user_id')
         course_details = Course.objects.get(id=int(course_id))
         user_details = User.objects.get(id=user_id)
-        new_relation = UserCourseRelation(user=user_details, course=course_details)
+        new_relation = UserCourseRelation(user=user_details, course=course_details, is_student=True)
         new_relation.save()
         msg = "Student added to course successfully."
     else:
         course_id = request.GET.get('course_id')
         course_details = Course.objects.get(id=course_id)
 
-    data = institution_students(request)
-    if not data["students_exist"]:
-        return render(request, 'course_data_to_institution.html', {"msg": 'Students not registered in the institution yet, try registering a new student!'})
+    data = institution_users(request, "student")
+    if not data["users_exist"]:
+        return render(request, 'student_signup.html', {"msg": 'Students not registered in the institution yet, try registering a new student!'})
     relations = UserCourseRelation.objects.filter(course=course_details)
     students_lst = []
     relations_user = []
     for relation in relations:
         relations_user.append(relation.user)
-    for user in data["student_lst"]:
+    for user in data["users_lst"]:
         if user not in relations_user:
             students_lst.append(user)
     if len(relations) != 0 and len(students_lst) == 0:
         return render(request, 'add_students_to_course.html', {'course_details': course_details, 'msg': "No new students to add to this course."})
-    elif len(relations) == 0:
-        students_lst = data["student_lst"]
+    if len(relations) == 0:
+        students_lst = data["users_lst"]
     if msg is not None:
-        return render(request, 'add_students_to_course.html', {"course_details": course_details, "students_lst": students_lst, "student_exists": data["students_exist"], "msg": msg})
-    return render(request, 'add_students_to_course.html', {"course_details": course_details, "students_lst": students_lst, "student_exists": data["students_exist"]})
+        return render(request, 'add_students_to_course.html', {"course_details": course_details, "students_lst": students_lst, "student_exists": data["users_exist"], "msg": msg})
+    return render(request, 'add_students_to_course.html', {"course_details": course_details, "students_lst": students_lst, "student_exists": data["users_exist"]})
 
 @login_required(login_url="institution_login")
 def display_add_instructor_to_course(request):
-    pass
+    """ display instructor of a course, path='course/add-instructor'. One Course has only one instructor"""
+    msg = None
+    # add or update user
+    if request.method == 'POST':
+        course_id = request.POST.get('course_id')
+        user_id = request.POST.get('user_id')
+        course_details = Course.objects.get(id=int(course_id))
+        user_details = User.objects.get(id=user_id)
+        try:
+            course_relation = UserCourseRelation.objects.get(course=course_details, is_instructor=True)
+        except Exception as e:
+            course_relation = None
+        if course_relation is None:
+            # insert user
+            new_relation = UserCourseRelation(user=user_details, course=course_details, is_instructor=True)
+            new_relation.save()
+        else:
+            # update user
+            course_relation.user = user_details
+            course_relation.save()
+        request.session["course_id"] = course_id
+        return redirect("complete_course_details")
+
+    course_id = request.GET.get('course_id')
+    course_details = Course.objects.get(id=course_id)
+
+    data = institution_users(request, "instructor")
+    if not data["users_exist"]:
+        return render(request, 'instructor_signup.html', {"msg": 'Instructors not registered in the institution yet, try registering a new instructor!'})
+    relations = UserCourseRelation.objects.filter(course=course_details)
+    instructors_lst = []
+    relations_user = []
+    for relation in relations:
+        relations_user.append(relation.user)
+    for user in data["users_lst"]:
+        if user not in relations_user:
+            instructors_lst.append(user)
+    if len(relations) != 0 and len(instructors_lst) == 0:
+        return render(request, 'add_instructor_to_course.html', {'course_details': course_details, 'msg': "No new instructors to add to this course."})
+    elif len(relations) == 0:
+        instructors_lst = data["users_lst"]
+    if msg is not None:
+        return render(request, 'add_instructor_to_course.html', {"course_details": course_details, "instructors_lst": instructors_lst, "instructor_exists": data["users_exist"], "msg": msg})
+    return render(request, 'add_instructor_to_course.html', {"course_details": course_details, "instructors_lst": instructors_lst, "instructor_exists": data["users_exist"]})
