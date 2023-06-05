@@ -32,7 +32,7 @@
                             <form action="{% url 'add_students_to_course' %}" method="POST"> {% csrf_token %}
                                 <input type="hidden" value="{{ user.id }}" name="user_id"/>
                                 <input type="hidden" value="{{ course_details.id }}" name="course_id"/>
-                                <button type="submit">Add</button>
+                                <button type="submit">Add to course</button>
                             </form>
                         </td>
                     </tr>
