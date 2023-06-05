@@ -55,7 +55,7 @@ def signup_func(request, user_type):
                 new_institution.save()
                 new_subscription = Subscription(user=new_user, amount_paid=amount, currency=currency, is_basic=True)
                 new_subscription.save()
-                return render(request, 'login.html')
+                return render(request, 'login.html', {'msg': "Registered Successfully!"})
             elif user_type == "student":
                 new_user = User(first_name=new_first_name, last_name=new_last_name, email=new_email, password=new_password1, is_student=True, username=new_email)
                 new_user.save()
@@ -213,6 +213,8 @@ def course_list(request):
         return render(request, 'institution_home.html', {'msg': 'Institution details not found!'})
     try:
         course_lst = Course.objects.filter(institution=current_institution)
+        if len(course_lst) == 0:
+            return render(request, 'institution_home.html', {'msg': 'Course not created yet, try creating a new course!'})
         return render(request, 'course_list.html', {'course_list': course_lst, 'course_exist': True})
     except Exception as e:
         return render(request, 'institution_home.html', {'msg': 'Course not created yet, try creating a new course!'})
@@ -229,6 +231,8 @@ def student_list(request):
         student_lst = []
         for i in details_lst:
             student_lst.append(i.user)
+        if len(student_lst) == 0:
+            return render(request, 'institution_home.html', {'msg': 'Students not registered yet, try registering a new student!'})
         return render(request, 'institution_users_list.html', {'user_list': student_lst, 'student_exist': True})
     except Exception as e:
         return render(request, 'institution_home.html', {'msg': 'Students not registered yet, try registering a new student!'})
@@ -245,9 +249,11 @@ def instructor_list(request):
         instructor_lst = []
         for i in details_lst:
             instructor_lst.append(i.user)
+        if len(instructor_lst) == 0:
+            return render(request, 'institution_home.html', {'msg': 'Instructors not registered yet, try registering a new Instructor!'})
         return render(request, 'institution_users_list.html', {'user_list': instructor_lst, 'instructor_exist': True})
     except Exception as e:
-        return render(request, 'institution_home.html', {'msg': 'Students not registered yet, try registering a new student!'})
+        return render(request, 'institution_home.html', {'msg': 'Instructors not registered yet, try registering a new Instructor!'})
 
 def course_users(course_id):
     """ function to get all students, instructors of a course from course-id """
