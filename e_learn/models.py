@@ -48,13 +48,13 @@ class Notes(models.Model):
     content = models.TextField()
     notes_doc = models.FileField(upload_to="./notes")
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    created_on = models.DateField(default=timezone.now)
+    created_on = models.DateField(auto_now_add=True)
 
 class Assignment(models.Model):
     name = models.TextField()
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     deadline = models.DateField()
-    created_on = models.DateField(default=timezone.now)
+    created_on = models.DateField(auto_now_add=True)
     assignment_doc = models.FileField()
 
 class AssignmentGrades(models.Model):
