@@ -3,6 +3,7 @@
 {% block body %}
     <a href="{% url 'institution_home' %}">Home</a>
     <a href="{% url 'course_list' %}">Courses</a>
+    <a href="{% url 'remove_course' %}?course_id={{ course_details.id }}">Remove course</a>
     <h3> Course: {{ course_details.name }}</h3>
     <p>Description: {{ course_details.description }}</p>
     <a href="{% url 'add_students_to_course' %}?course_id={{ course_details.id }}">Add students to the course</a> <br>
@@ -16,6 +17,8 @@
                     <th scope="col" style="border: 1px solid black;"> First Name </th>
                     <th scope="col" style="border: 1px solid black;"> Last Name </th>
                     <th scope="col" style="border: 1px solid black;"> Email </th>
+                    <th scope="col" style="border: 1px solid black;"> Actions </th>
+
                 </tr>
             </thead>
             <tbody>
@@ -24,6 +27,13 @@
                     <td style="border: 1px solid black;padding: 5px" align="center">{{ instructor.first_name }}</td>
                     <td style="border: 1px solid black;padding: 5px" align="center">{{ instructor.last_name }}</td>
                     <td style="border: 1px solid black;padding: 5px" align="center">{{ instructor.email }}</td>
+                    <td style="border: 1px solid black;padding: 5px" align="center">
+                            <form action="{% url 'remove_user_from_course' %}" method="POST"> {% csrf_token %}
+                                <input type="hidden" value="{{ instructor.id }}" name="user_id"/>
+                                <input type="hidden" value="{{ course_details.id }}" name="course_id"/>
+                                <button type="submit">Remove Instructor</button>
+                            </form>
+                        </td>
                 </tr>
             </tbody>
         </table>
@@ -44,6 +54,7 @@
                     <th scope="col" style="border: 1px solid black;"> First Name </th>
                     <th scope="col" style="border: 1px solid black;"> Last Name </th>
                     <th scope="col" style="border: 1px solid black;"> Email </th>
+                    <th scope="col" style="border: 1px solid black;"> Actions </th>
                 </tr>
             </thead>
             <tbody>
@@ -53,6 +64,13 @@
                         <td style="border: 1px solid black;padding: 5px" align="center">{{ user.first_name }}</td>
                         <td style="border: 1px solid black;padding: 5px" align="center">{{ user.last_name }}</td>
                         <td style="border: 1px solid black;padding: 5px" align="center">{{ user.email }}</td>
+                        <td style="border: 1px solid black;padding: 5px" align="center">
+                            <form action="{% url 'remove_user_from_course' %}" method="POST"> {% csrf_token %}
+                                <input type="hidden" value="{{ user.id }}" name="user_id"/>
+                                <input type="hidden" value="{{ course_details.id }}" name="course_id"/>
+                                <button type="submit">Remove Student</button>
+                            </form>
+                        </td>
                     </tr>
                 {% endfor %}
             </tbody>

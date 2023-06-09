@@ -180,7 +180,7 @@ def student_home(request):
 def instructor_home(request):
     """ Instructor's Home Page, path=instructor/home """
     courses_lst = user_courses(request)
-    if courses_lst is None:
+    if courses_lst is None or len(courses_lst) == 0:
         return render(request, 'instructor_home.html', {'msg': "You don't have any courses to display."})
     return render(request, 'instructor_home.html', {'course_list': courses_lst, 'course_exist': True})
 
@@ -397,3 +397,30 @@ def display_add_instructor_to_course(request):
     if msg is not None:
         return render(request, 'add_instructor_to_course.html', {"course_details": course_details, "instructors_lst": instructors_lst, "instructor_exists": data["users_exist"], "msg": msg})
     return render(request, 'add_instructor_to_course.html', {"course_details": course_details, "instructors_lst": instructors_lst, "instructor_exists": data["users_exist"]})
+
+@login_required(login_url='institution_login')
+def remove_course(request):
+    """ Remove a course from the institution, path='course/remove' """
+    course_id = request.GET.get('course_id')
+    try:
+        course_details = Course.objects.get(pk=course_id)
+    except Exception as e:
+        request.session['course_id'] = course_id
+        return redirect('complete_course_details')
+    course_details.delete()
+    return redirect('course_list')
+
+@login_required(login_url='institution_login')
+def remove_user_from_course(request):
+    """ Remove Student, Instructor from a course, path='course/remove-user' """
+    course_id = request.POST.get('course_id')
+    user_id = request.POST.get('user_id')
+    try:
+        user_course_relation = UserCourseRelation.objects.get(course=course_id, user=user_id)
+    except Exception as e:
+        request.session['course_id'] = course_id
+        return redirect('complete_course_details')
+    user_course_relation.delete()
+    request.session['course_id'] = course_id
+    return redirect('complete_course_details')
+
