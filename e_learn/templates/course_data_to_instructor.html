@@ -1,0 +1,94 @@
+{% extends "base_loggedIn.html" %}
+
+{% block body %}
+    <a href="{% url 'instructor_home' %}">Home</a>
+    <h3> Course: {{ course_details.name }}</h3>
+    <p>Description: {{ course_details.description }}</p>
+    <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&request_students=True">Students</a>
+    <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&request_notes=True">Lectures</a>
+    <br>
+    {% if requested_notes_create %}
+        <br>
+        <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}" method="POST"> {% csrf_token %}
+            <label> Lecture Name </label>
+            <input type="text" name="notes_name" placeholder="Enter Lecture name" required/> <br> <br>
+            <label> Lecture Content </label>
+            <input type="text" name="notes_content" placeholder="Lecture content"/> <br> <br>
+            <button type="submit">Create Notes</button>
+        </form>
+    {% endif %}
+
+    {% if requested_update_notes %}
+        <br>
+        <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&update=True&notes_id={{ notes_details.id }}" method="POST"> {% csrf_token %}
+            <label> Lecture Name </label>
+            <input type="text" name="notes_name" placeholder="Enter Lecture name" value="{{ notes_details.name }}" required/> <br> <br>
+            <label> Lecture Content </label>
+            <input type="text" name="notes_content" placeholder="Lecture content" value="{{ notes_details.content }}"/> <br> <br>
+            <button type="submit">Update Notes</button>
+        </form>
+    {% endif %}
+
+    {% if requested_notes %}
+        <br> <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&request_notes_create=True">Add New Lecture</a>
+        {% if notes_list %}
+            <br> <br>
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col" style="border: 1px solid black;">Lecture Name</th>
+                        <th scope="col" style="border: 1px solid black;">Lecture Content</th>
+                        <th scope="col" style="border: 1px solid black;">Created On</th>
+{#                        <th scope="col" style="border: 1px solid black;">Notes Files</th>#}
+                        <th scope="col" style="border: 1px solid black;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for notes in notes_list %}
+                        <tr>
+                            <td style="border: 1px solid black; padding: 5px" align="center"> {{ notes.name }} </td>
+                            <td style="border: 1px solid black; padding: 5px" align="center"> {{ notes.content }} </td>
+                            <td style="border: 1px solid black; padding: 5px" align="center"> {{ notes.created_on }} </td>
+                            <td style="border: 1px solid black; padding: 5px" align="center">
+                                <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&notes_id={{ notes.id }}&request_update_notes=True"> Update </a>
+                                &nbsp;<a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&notes_id={{ notes.id }}&remove_notes=True"> Remove </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    {% endif %}
+
+    {% if requested_students %}
+        {% if students_exists %}
+            <h4>Students</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col" style="border: 1px solid black;"> Student ID </th>
+                        <th scope="col" style="border: 1px solid black;"> First Name </th>
+                        <th scope="col" style="border: 1px solid black;"> Last Name </th>
+                        <th scope="col" style="border: 1px solid black;"> Email </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in students_lst %}
+                        <tr>
+                            <td style="border: 1px solid black;padding: 5px" align="center">{{ user.id }}</td>
+                            <td style="border: 1px solid black;padding: 5px" align="center">{{ user.first_name }}</td>
+                            <td style="border: 1px solid black;padding: 5px" align="center">{{ user.last_name }}</td>
+                            <td style="border: 1px solid black;padding: 5px" align="center">{{ user.email }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <br> This course does not have any students enrolled yet. <br>
+        {% endif %}
+    {% endif %}
+
+    {% if msg %}
+        <br><br> {{ msg }} <br>
+    {% endif %}
+{% endblock %}

@@ -2,7 +2,7 @@ from django.shortcuts import render, HttpResponse, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .models import User, Institution, Course, UserCourseRelation, Assignment, AssignmentGrades, UserInstitutionRelation, Subscription
+from .models import User, Institution, Course, UserCourseRelation, Assignment, AssignmentGrades, UserInstitutionRelation, Subscription, Notes
 
 def home(request):
     """ Dashboard of the application """
@@ -180,6 +180,29 @@ def student_home(request):
 def instructor_home(request):
     """ Instructor's Home Page, path=instructor/home """
     courses_lst = user_courses(request)
+    send_data = {}
+    requested_profile = request.GET.get('request_profile')
+    # display update form to user
+    if request.GET.get('req_update_profile') is not None:
+        send_data['user_details'] = request.user
+        send_data['req_update_profile'] = True
+        return render(request, 'instructor_home.html', send_data)
+    # update profile details
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        user_details = User.objects.get(pk=request.user.id)
+        user_details.first_name = first_name
+        user_details.last_name = last_name
+        user_details.save()
+        requested_profile = True
+        send_data['msg'] = 'Profile updated successfully.'
+    # display profile details
+    if requested_profile is not None:
+        send_data['user_details'] = request.user
+        send_data['requested_profile'] = True
+        return render(request, 'instructor_home.html', send_data)
+    # display course list
     if courses_lst is None or len(courses_lst) == 0:
         return render(request, 'instructor_home.html', {'msg': "You don't have any courses to display."})
     return render(request, 'instructor_home.html', {'course_list': courses_lst, 'course_exist': True})
@@ -424,3 +447,88 @@ def remove_user_from_course(request):
     request.session['course_id'] = course_id
     return redirect('complete_course_details')
 
+
+def course_notes(course_id):
+    """ function to fetch all notes of a course """
+    try:
+        notes_data = Notes.objects.filter(course=course_id)
+        if len(notes_data) == 0 or notes_data is None:
+            return None
+        return notes_data
+    except Exception as e:
+        return None
+
+@login_required(login_url='login')
+def instructor_course_details(request):
+    """ display course details(notes, assignments, students) for instructor(user), path='instructor/course' with different query parameters """
+    course_id = request.GET.get('course_id')
+    req_students = request.GET.get('request_students')
+    req_notes = request.GET.get('request_notes')
+    req_notes_create = request.GET.get('request_notes_create')
+    req_update_notes = request.GET.get('request_update_notes')
+    req_remove_notes = request.GET.get('remove_notes')
+    course_data = Course.objects.get(pk=course_id)
+    send_data = {"course_details": course_data}
+    requested_notes = False
+    requested_students = False
+    if req_students is not None:
+        requested_students = True
+        send_data['requested_students'] = True
+    elif req_notes is not None:
+        requested_notes = True
+        send_data['requested_notes'] = True
+    elif req_notes_create is not None:
+        send_data['requested_notes_create'] = True
+        return render(request, 'course_data_to_instructor.html', send_data)
+    # Add new notes
+    elif request.method == 'POST':
+        notes_name = request.POST.get('notes_name')
+        notes_content = request.POST.get('notes_content')
+        # create a new notes record
+        if request.GET.get('update') is None:
+            new_notes = Notes(name=notes_name, content=notes_content, course=course_data)
+            new_notes.save()
+        # update a notes record
+        else:
+            notes_id = request.GET.get('notes_id')
+            notes_obj = Notes.objects.get(pk=notes_id)
+            notes_obj.name = notes_name
+            notes_obj.content = notes_content
+            notes_obj.save()
+        # display all notes
+        requested_notes = True
+        send_data['requested_notes'] = requested_notes
+    elif req_remove_notes is not None:
+        notes_id = request.GET.get('notes_id')
+        notes_obj = Notes.objects.get(pk=notes_id)
+        notes_obj.delete()
+        # display all notes
+        requested_notes = True
+        send_data['requested_notes'] = requested_notes
+    elif req_update_notes is not None:
+        notes_id = request.GET.get('notes_id')
+        notes_details = Notes.objects.get(pk=notes_id)
+        send_data['requested_update_notes'] = True
+        send_data['notes_details'] = notes_details
+        return render(request, 'course_data_to_instructor.html', send_data)
+
+    # display notes of a course
+    if requested_notes:
+        notes_data = course_notes(course_id)
+        if notes_data is None:
+            send_data['msg'] = "No notes created for this course."
+            return render(request, 'course_data_to_instructor.html', send_data)
+        send_data['notes_list'] = notes_data
+        return render(request, 'course_data_to_instructor.html', send_data)
+
+    # display students of a course
+    if requested_students:
+        users_data = course_users(course_id)
+        if users_data is None:
+            return render(request, "instructor_home.html")
+        students_exists = True
+        if len(users_data["students_lst"]) == 0:
+            students_exists = False
+        send_data['students_lst'] = users_data["students_lst"]
+        send_data['students_exists'] = students_exists
+    return render(request, "course_data_to_instructor.html", send_data)
