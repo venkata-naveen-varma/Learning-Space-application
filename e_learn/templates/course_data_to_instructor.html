@@ -6,10 +6,12 @@
     <p>Description: {{ course_details.description }}</p>
     <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&request_students=True">Students</a>
     <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&request_notes=True">Lectures</a>
+    <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&request_assignments=True">Assignments</a>
     <br>
+{#    Lecure notes #}
     {% if requested_notes_create %}
         <br>
-        <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}" method="POST"> {% csrf_token %}
+        <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}?notes=True" method="POST"> {% csrf_token %}
             <label> Lecture Name </label>
             <input type="text" name="notes_name" placeholder="Enter Lecture name" required/> <br> <br>
             <label> Lecture Content </label>
@@ -20,7 +22,7 @@
 
     {% if requested_update_notes %}
         <br>
-        <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&update=True&notes_id={{ notes_details.id }}" method="POST"> {% csrf_token %}
+        <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&notes=True&update=True&notes_id={{ notes_details.id }}" method="POST"> {% csrf_token %}
             <label> Lecture Name </label>
             <input type="text" name="notes_name" placeholder="Enter Lecture name" value="{{ notes_details.name }}" required/> <br> <br>
             <label> Lecture Content </label>
@@ -58,6 +60,66 @@
                 </tbody>
             </table>
         {% endif %}
+    {% endif %}
+
+{#    Assignments#}
+    {% if requested_assignments %}
+        <br> <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&request_assignment_create=True">Add New Assignment</a>
+        {% if assignment_list %}
+            <br> <br>
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col" style="border: 1px solid black;">Assignment Name</th>
+                        <th scope="col" style="border: 1px solid black;">Assignment Content</th>
+                        <th scope="col" style="border: 1px solid black;">Assignment Deadline</th>
+                        <th scope="col" style="border: 1px solid black;">Created On</th>
+
+                        <th scope="col" style="border: 1px solid black;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assignment in assignment_list %}
+                        <tr>
+                            <td style="border: 1px solid black; padding: 5px" align="center"> {{ assignment.name }} </td>
+                            <td style="border: 1px solid black; padding: 5px" align="center"> {{ assignment.content }} </td>
+                            <td style="border: 1px solid black; padding: 5px" align="center"> {{ assignment.deadline }} </td>
+                            <td style="border: 1px solid black; padding: 5px" align="center"> {{ assignment.created_on }} </td>
+                            <td style="border: 1px solid black; padding: 5px" align="center">
+                                <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment.id }}&request_update_assignment=True"> Update </a>
+                                &nbsp;<a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment.id }}&remove_assignment=True"> Remove </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    {% endif %}
+
+    {% if requested_assignment_create %}
+        <br>
+        <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment=True" method="POST"> {% csrf_token %}
+            <label> Assignment Name </label>
+            <input type="text" name="assignment_name" placeholder="Enter Assignment name" required/> <br> <br>
+            <label> Assignment Content </label>
+            <input type="text" name="assignment_content" placeholder="Assignment content"/> <br> <br>
+            <label> Assignment Deadline </label>
+            <input type="datetime-local" name="assignment_deadline" placeholder="Assignment Deadline"/> <br> <br>
+            <button type="submit">Create Assignment</button>
+        </form>
+    {% endif %}
+
+    {% if requested_update_assignment %}
+        <br>
+        <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment=True&update=True&assignment_id={{ assignment_details.id }}" method="POST"> {% csrf_token %}
+            <label> Assignment Name </label>
+            <input type="text" name="assignment_name" placeholder="Enter assignment name" value="{{ assignment_details.name }}" required/> <br> <br>
+            <label> Assignment Content </label>
+            <input type="text" name="assignment_content" placeholder="assignment content" value="{{ assignment_details.content }}"/> <br> <br>
+            <label> Assignment Deadline </label>
+            <input type="datetime-local" name="assignment_deadline" placeholder="Assignment Deadline" value="{{ assignment_details.deadline }}"/> <br> <br>
+            <button type="submit">Update Assignment</button>
+        </form>
     {% endif %}
 
     {% if requested_students %}

@@ -155,6 +155,29 @@ def logout_user(request):
 @login_required(login_url='institution_login')
 def institution_home(request):
     """ Institution's Home Page, path=institution/home """
+    send_data = {}
+    requested_profile = request.GET.get('request_profile')
+    req_update_profile = request.GET.get('req_update_profile')
+    if req_update_profile is not None:
+        send_data['user_details'] = request.user
+        send_data['req_update_profile'] = True
+        return render(request, 'institution_home.html', send_data)
+    # update profile details
+    if request.method == 'POST':
+        institution_name = request.POST.get('institution_name')
+        user_details = User.objects.get(pk=request.user.id)
+        institution_details = Institution.objects.get(user=request.user)
+        user_details.first_name = institution_name
+        institution_details.name = institution_name
+        user_details.save()
+        institution_details.save()
+        requested_profile = True
+        send_data['msg'] = 'Profile updated successfully.'
+    # display profile details
+    if requested_profile is not None:
+        send_data['user_details'] = User.objects.get(pk=request.user.id)
+        send_data['requested_profile'] = True
+        return render(request, 'institution_home.html', send_data)
     return render(request, 'institution_home.html')
 
 def user_courses(request):
@@ -178,7 +201,9 @@ def student_home(request):
 
 @login_required(login_url='login')
 def instructor_home(request):
-    """ Instructor's Home Page, path=instructor/home """
+    """ Instructor's Home Page, path=instructor/home
+    features: profile, home, Course list
+    """
     courses_lst = user_courses(request)
     send_data = {}
     requested_profile = request.GET.get('request_profile')
@@ -458,19 +483,36 @@ def course_notes(course_id):
     except Exception as e:
         return None
 
+def course_assignments(course_id):
+    """ function to fetch all assignments of a course """
+    try:
+        assignments_data = Assignment.objects.filter(course=course_id)
+        if len(assignments_data) == 0 or assignments_data is None:
+            return None
+        return assignments_data
+    except Exception as e:
+        return None
+
 @login_required(login_url='login')
 def instructor_course_details(request):
-    """ display course details(notes, assignments, students) for instructor(user), path='instructor/course' with different query parameters """
+    """ display course details(notes, assignments, students) for instructor(user), path='instructor/course' with different query parameters
+    features: Course details, Students, Lectures(notes), Assignment
+    """
     course_id = request.GET.get('course_id')
     req_students = request.GET.get('request_students')
     req_notes = request.GET.get('request_notes')
+    req_assignments = request.GET.get('request_assignments')
+    req_assignment_create = request.GET.get('request_assignment_create')
+    req_update_assignment = request.GET.get('request_update_assignment')
     req_notes_create = request.GET.get('request_notes_create')
     req_update_notes = request.GET.get('request_update_notes')
     req_remove_notes = request.GET.get('remove_notes')
+    req_remove_assignment = request.GET.get('remove_assignment')
     course_data = Course.objects.get(pk=course_id)
     send_data = {"course_details": course_data}
     requested_notes = False
     requested_students = False
+    requested_assignments = False
     if req_students is not None:
         requested_students = True
         send_data['requested_students'] = True
@@ -480,36 +522,92 @@ def instructor_course_details(request):
     elif req_notes_create is not None:
         send_data['requested_notes_create'] = True
         return render(request, 'course_data_to_instructor.html', send_data)
-    # Add new notes
+    elif req_assignment_create is not None:
+        send_data['requested_assignment_create'] = True
+        return render(request, 'course_data_to_instructor.html', send_data)
+    # perform database operations for lecture notes and assignments
     elif request.method == 'POST':
-        notes_name = request.POST.get('notes_name')
-        notes_content = request.POST.get('notes_content')
-        # create a new notes record
-        if request.GET.get('update') is None:
-            new_notes = Notes(name=notes_name, content=notes_content, course=course_data)
-            new_notes.save()
-        # update a notes record
+        # Add new notes
+        if request.GET.get('notes'):
+            notes_name = request.POST.get('notes_name')
+            notes_content = request.POST.get('notes_content')
+            # create a new notes record
+            if request.GET.get('update') is None:
+                new_notes = Notes(name=notes_name, content=notes_content, course=course_data)
+                new_notes.save()
+            # update a notes record
+            else:
+                notes_id = request.GET.get('notes_id')
+                notes_obj = Notes.objects.get(pk=notes_id)
+                notes_obj.name = notes_name
+                notes_obj.content = notes_content
+                notes_obj.save()
+            # display all notes
+            requested_notes = True
+            send_data['requested_notes'] = requested_notes
+        # Add new assignment
         else:
-            notes_id = request.GET.get('notes_id')
-            notes_obj = Notes.objects.get(pk=notes_id)
-            notes_obj.name = notes_name
-            notes_obj.content = notes_content
-            notes_obj.save()
-        # display all notes
-        requested_notes = True
-        send_data['requested_notes'] = requested_notes
+            assignment_name = request.POST.get('assignment_name')
+            assignment_content = request.POST.get('assignment_content')
+            assignment_deadline = request.POST.get('assignment_deadline')
+            # create a new assignment record
+            if request.GET.get('update') is None:
+                new_assignment = Assignment(name=assignment_name, content=assignment_content, deadline=assignment_deadline, course=course_data)
+                new_assignment.save()
+            # update an assignment record
+            else:
+                assignment_id = request.GET.get('assignment_id')
+                assignment_obj = Assignment.objects.get(pk=assignment_id)
+                assignment_obj.name = assignment_name
+                assignment_obj.content = assignment_content
+                assignment_obj.deadline = assignment_deadline
+                assignment_obj.save()
+            # display all assignments
+            requested_assignments = True
+            send_data['requested_assignments'] = requested_assignments
     elif req_remove_notes is not None:
         notes_id = request.GET.get('notes_id')
-        notes_obj = Notes.objects.get(pk=notes_id)
-        notes_obj.delete()
+        try:
+            notes_obj = Notes.objects.get(pk=notes_id)
+            notes_obj.delete()
+        except Exception as e:
+            pass
         # display all notes
         requested_notes = True
         send_data['requested_notes'] = requested_notes
+    elif req_remove_assignment is not None:
+        assignment_id = request.GET.get('assignment_id')
+        try:
+            assignment_obj = Assignment.objects.get(pk=assignment_id)
+            assignment_obj.delete()
+        except Exception as e:
+            pass
+        # display all assignment
+        requested_assignments = True
+        send_data['requested_assignments'] = requested_assignments
     elif req_update_notes is not None:
         notes_id = request.GET.get('notes_id')
         notes_details = Notes.objects.get(pk=notes_id)
         send_data['requested_update_notes'] = True
         send_data['notes_details'] = notes_details
+        return render(request, 'course_data_to_instructor.html', send_data)
+    elif req_assignments is not None:
+        requested_assignments = True
+        send_data['requested_assignments'] = True
+    elif req_update_assignment is not None:
+        assignment_id = request.GET.get('assignment_id')
+        assignment_details = Assignment.objects.get(pk=assignment_id)
+        send_data['requested_update_assignment'] = True
+        send_data['assignment_details'] = assignment_details
+        return render(request, 'course_data_to_instructor.html', send_data)
+
+    # display assignments of a course
+    if requested_assignments:
+        assignments_data = course_assignments(course_id)
+        if assignments_data is None:
+            send_data['msg'] = "No assignments created for this course."
+            return render(request, 'course_data_to_instructor.html', send_data)
+        send_data['assignment_list'] = assignments_data
         return render(request, 'course_data_to_instructor.html', send_data)
 
     # display notes of a course

@@ -2,6 +2,7 @@
 
 {% block body %}
     <a href="{% url 'institution_home' %}">Home</a>
+    <a href="{% url 'institution_home' %}?request_profile=True">Profile</a>
     <a href="{% url 'course_list' %}">Courses</a>
     <a href="{% url 'remove_course' %}?course_id={{ course_details.id }}">Remove course</a>
     <h3> Course: {{ course_details.name }}</h3>
