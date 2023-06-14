@@ -199,7 +199,7 @@ def instructor_home(request):
         send_data['msg'] = 'Profile updated successfully.'
     # display profile details
     if requested_profile is not None:
-        send_data['user_details'] = request.user
+        send_data['user_details'] = User.objects.get(pk=request.user.id)
         send_data['requested_profile'] = True
         return render(request, 'instructor_home.html', send_data)
     # display course list
