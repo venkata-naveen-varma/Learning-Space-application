@@ -57,6 +57,7 @@ class Assignment(models.Model):
     created_on = models.DateField(auto_now_add=True)
     assignment_doc = models.FileField()
     content = models.TextField()
+    grade_points = models.IntegerField(null=True)
 
 class AssignmentGrades(models.Model):
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE)

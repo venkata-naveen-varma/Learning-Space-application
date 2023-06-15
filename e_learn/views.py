@@ -493,26 +493,42 @@ def course_assignments(course_id):
     except Exception as e:
         return None
 
+def create_assignmentgrade_relation(assignment_details, course_id):
+    """ function to create assignmentgrade relations in the DB """
+    course_students = course_users(course_id)['students_lst']
+    for student in course_students:
+        new_relation = AssignmentGrades(grade=None, assignment=assignment_details, user=student)
+        new_relation.save()
+
 @login_required(login_url='login')
 def instructor_course_details(request):
     """ display course details(notes, assignments, students) for instructor(user), path='instructor/course' with different query parameters
     features: Course details, Students, Lectures(notes), Assignment
     """
     course_id = request.GET.get('course_id')
+    assignment_id = request.GET.get('assignment_id')
+    # students
     req_students = request.GET.get('request_students')
+    req_update_final_grade = request.GET.get('request_update_final_grade')
+    # notes
     req_notes = request.GET.get('request_notes')
-    req_assignments = request.GET.get('request_assignments')
-    req_assignment_create = request.GET.get('request_assignment_create')
-    req_update_assignment = request.GET.get('request_update_assignment')
     req_notes_create = request.GET.get('request_notes_create')
     req_update_notes = request.GET.get('request_update_notes')
     req_remove_notes = request.GET.get('remove_notes')
+    # assignments
+    req_assignments = request.GET.get('request_assignments')
+    req_assignment_create = request.GET.get('request_assignment_create')
+    req_update_assignment = request.GET.get('request_update_assignment')
     req_remove_assignment = request.GET.get('remove_assignment')
+    # grades
+    req_grades = request.GET.get('request_grades')
+    req_update_grade = request.GET.get('request_update_grade')
     course_data = Course.objects.get(pk=course_id)
     send_data = {"course_details": course_data}
     requested_notes = False
     requested_students = False
     requested_assignments = False
+    requested_grades = False
     if req_students is not None:
         requested_students = True
         send_data['requested_students'] = True
@@ -525,6 +541,9 @@ def instructor_course_details(request):
     elif req_assignment_create is not None:
         send_data['requested_assignment_create'] = True
         return render(request, 'course_data_to_instructor.html', send_data)
+    elif req_grades is not None:
+        send_data['requested_grades'] = True
+        requested_grades = True
     # perform database operations for lecture notes and assignments
     elif request.method == 'POST':
         # Add new notes
@@ -546,14 +565,16 @@ def instructor_course_details(request):
             requested_notes = True
             send_data['requested_notes'] = requested_notes
         # Add new assignment
-        else:
+        elif request.GET.get('assignment'):
             assignment_name = request.POST.get('assignment_name')
             assignment_content = request.POST.get('assignment_content')
             assignment_deadline = request.POST.get('assignment_deadline')
+            assignment_gradepoints = request.POST.get('assignment_gradepoints')
             # create a new assignment record
             if request.GET.get('update') is None:
-                new_assignment = Assignment(name=assignment_name, content=assignment_content, deadline=assignment_deadline, course=course_data)
+                new_assignment = Assignment(name=assignment_name, content=assignment_content, deadline=assignment_deadline, course=course_data, grade_points=assignment_gradepoints)
                 new_assignment.save()
+                create_assignmentgrade_relation(new_assignment, course_id)
             # update an assignment record
             else:
                 assignment_id = request.GET.get('assignment_id')
@@ -561,10 +582,31 @@ def instructor_course_details(request):
                 assignment_obj.name = assignment_name
                 assignment_obj.content = assignment_content
                 assignment_obj.deadline = assignment_deadline
+                assignment_obj.grade_points = assignment_gradepoints
                 assignment_obj.save()
             # display all assignments
             requested_assignments = True
             send_data['requested_assignments'] = requested_assignments
+        # update grade of an assignment
+        elif request.GET.get('grade'):
+            assignment_id = request.GET.get('assignment_id')
+            record_id = request.GET.get('student_record')
+            new_grade = request.POST.get('grade')
+            assignmentgrade_obj = AssignmentGrades.objects.get(pk=record_id)
+            assignmentgrade_obj.grade = new_grade
+            assignmentgrade_obj.save()
+            requested_grades = True
+            send_data['requested_grades'] = requested_grades
+        # update final grade of a student
+        else:
+            assignment_id = request.GET.get('assignment_id')
+            record_id = request.GET.get('student_record')
+            new_grade = request.POST.get('grade')
+            usercourserelation_obj = UserCourseRelation.objects.get(pk=record_id)
+            usercourserelation_obj.final_grade = new_grade
+            usercourserelation_obj.save()
+            requested_students = True
+            send_data['requested_students'] = requested_students
     elif req_remove_notes is not None:
         notes_id = request.GET.get('notes_id')
         try:
@@ -600,6 +642,14 @@ def instructor_course_details(request):
         send_data['requested_update_assignment'] = True
         send_data['assignment_details'] = assignment_details
         return render(request, 'course_data_to_instructor.html', send_data)
+    elif req_update_grade is not None:
+        send_data['requested_grades'] = True
+        send_data['requested_grade_update'] = True
+        requested_grades = True
+    elif req_update_final_grade is not None:
+        send_data['requested_final_grade_update'] = True
+        requested_students = True
+        send_data['requested_students'] = requested_students
 
     # display assignments of a course
     if requested_assignments:
@@ -621,12 +671,25 @@ def instructor_course_details(request):
 
     # display students of a course
     if requested_students:
-        users_data = course_users(course_id)
+        users_data = UserCourseRelation.objects.filter(course=course_id)
+        students_exists = True
+        if users_data is None or len(users_data) == 0:
+            students_exists = False
+        send_data['students_lst'] = users_data
+        send_data['students_exists'] = students_exists
+
+    # display assignment grade details
+    if requested_grades:
+        assignment_details = Assignment.objects.get(pk=assignment_id)
+        users_data = course_users(course_id=course_id)
         if users_data is None:
             return render(request, "instructor_home.html")
         students_exists = True
         if len(users_data["students_lst"]) == 0:
-            students_exists = False
-        send_data['students_lst'] = users_data["students_lst"]
-        send_data['students_exists'] = students_exists
+            send_data['msg'] = "No students in the course yet."
+            return render(request, "course_data_to_instructor.html", send_data)
+        students_lst = AssignmentGrades.objects.filter(assignment=assignment_id)
+        send_data["students_lst"] = students_lst
+        send_data["assignment_details"] = assignment_details
+
     return render(request, "course_data_to_instructor.html", send_data)

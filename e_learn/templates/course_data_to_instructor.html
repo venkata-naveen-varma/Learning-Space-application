@@ -8,14 +8,14 @@
     <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&request_notes=True">Lectures</a>
     <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&request_assignments=True">Assignments</a>
     <br>
-{#    Lecure notes #}
+{# Lecure notes #}
     {% if requested_notes_create %}
         <br>
         <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}?notes=True" method="POST"> {% csrf_token %}
             <label> Lecture Name </label>
             <input type="text" name="notes_name" placeholder="Enter Lecture name" required/> <br> <br>
             <label> Lecture Content </label>
-            <input type="text" name="notes_content" placeholder="Lecture content"/> <br> <br>
+            <input type="text" name="notes_content" placeholder="Lecture content" required/> <br> <br>
             <button type="submit">Create Notes</button>
         </form>
     {% endif %}
@@ -62,7 +62,7 @@
         {% endif %}
     {% endif %}
 
-{#    Assignments#}
+{# Assignments #}
     {% if requested_assignments %}
         <br> <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&request_assignment_create=True">Add New Assignment</a>
         {% if assignment_list %}
@@ -74,7 +74,7 @@
                         <th scope="col" style="border: 1px solid black;">Assignment Content</th>
                         <th scope="col" style="border: 1px solid black;">Assignment Deadline</th>
                         <th scope="col" style="border: 1px solid black;">Created On</th>
-
+                        <th scope="col" style="border: 1px solid black;">Grade Points</th>
                         <th scope="col" style="border: 1px solid black;">Actions</th>
                     </tr>
                 </thead>
@@ -85,9 +85,11 @@
                             <td style="border: 1px solid black; padding: 5px" align="center"> {{ assignment.content }} </td>
                             <td style="border: 1px solid black; padding: 5px" align="center"> {{ assignment.deadline }} </td>
                             <td style="border: 1px solid black; padding: 5px" align="center"> {{ assignment.created_on }} </td>
+                            <td style="border: 1px solid black; padding: 5px" align="center"> {{ assignment.grade_points }} </td>
                             <td style="border: 1px solid black; padding: 5px" align="center">
                                 <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment.id }}&request_update_assignment=True"> Update </a>
                                 &nbsp;<a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment.id }}&remove_assignment=True"> Remove </a>
+                                &nbsp <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment.id }}&request_grades=True"> Grades </a>
                             </td>
                         </tr>
                     {% endfor %}
@@ -102,9 +104,11 @@
             <label> Assignment Name </label>
             <input type="text" name="assignment_name" placeholder="Enter Assignment name" required/> <br> <br>
             <label> Assignment Content </label>
-            <input type="text" name="assignment_content" placeholder="Assignment content"/> <br> <br>
+            <input type="text" name="assignment_content" placeholder="Assignment content" required/> <br> <br>
             <label> Assignment Deadline </label>
-            <input type="datetime-local" name="assignment_deadline" placeholder="Assignment Deadline"/> <br> <br>
+            <input type="datetime-local" name="assignment_deadline" placeholder="Assignment Deadline" required/> <br> <br>
+            <label> Assignment Grade Points </label>
+            <input type="number" name="assignment_gradepoints" placeholder="Assignment Grade Points" required/> <br> <br>
             <button type="submit">Create Assignment</button>
         </form>
     {% endif %}
@@ -117,11 +121,67 @@
             <label> Assignment Content </label>
             <input type="text" name="assignment_content" placeholder="assignment content" value="{{ assignment_details.content }}"/> <br> <br>
             <label> Assignment Deadline </label>
-            <input type="datetime-local" name="assignment_deadline" placeholder="Assignment Deadline" value="{{ assignment_details.deadline }}"/> <br> <br>
+            <input type="datetime-local" name="assignment_deadline" placeholder="Assignment Deadline" value="{{ assignment_details.deadline }}" required/> <br> <br>
+            <label> Assignment Grade Points </label>
+            <input type="number" name="assignment_gradepoints" placeholder="Assignment Grade Points" value="{{ assignment_details.grade_points }}" required/> <br> <br>
             <button type="submit">Update Assignment</button>
         </form>
     {% endif %}
 
+{# Grades #}
+    {% if requested_grades %}
+        <h4> Grades </h4>
+        <h4> Assignment - {{ assignment_details.name }} </h4>
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col" style="border: 1px solid black;"> Student ID </th>
+                    <th scope="col" style="border: 1px solid black;"> First Name </th>
+                    <th scope="col" style="border: 1px solid black;"> Last Name </th>
+                    <th scope="col" style="border: 1px solid black;"> Email </th>
+                    <th scope="col" style="border: 1px solid black;"> Grade </th>
+                    <th scope="col" style="border: 1px solid black;"> Action </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student_record in students_lst %}
+                    <tr>
+                        <td style="border: 1px solid black;padding: 5px" align="center">{{ student_record.user.id }}</td>
+                        <td style="border: 1px solid black;padding: 5px" align="center">{{ student_record.user.first_name }}</td>
+                        <td style="border: 1px solid black;padding: 5px" align="center">{{ student_record.user.last_name }}</td>
+                        <td style="border: 1px solid black;padding: 5px" align="center">{{ student_record.user.email }}</td>
+                        <td style="border: 1px solid black;padding: 5px" align="center">
+                            {% if requested_grade_update %}
+                                <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&grade=True&assignment_id={{ assignment_details.id }}&student_record={{ student_record.id }}" method="POST"> {% csrf_token %}
+                                    {% if student_record.grade is None %}
+                                        <input type="text" name="grade" placeholder="{{ student_record.grade }}" required>/{{ assignment_details.grade_points }}
+                                    {% else %}
+                                        <input type="text" name="grade" value="{{ student_record.grade }}" required>/{{ assignment_details.grade_points }}
+                                    {% endif %}
+                                    <input type="submit" value="Save">
+                                </form>
+                            {% else %}
+                                <form>
+                                    <input type="text" name="grade" value="{{ student_record.grade }}" readonly>/{{ assignment_details.grade_points }}
+                                </form>
+                            {% endif %}
+                        </td>
+                        {% if requested_grade_update %}
+                            <td style="border: 1px solid black; padding: 5px" align="center">
+                            Update the grade and click 'Save'
+                            </td>
+                        {% else %}
+                            <td style="border: 1px solid black; padding: 5px" align="center">
+                                <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment_details.id }}&request_update_grade=True"> Update </a>
+                            </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+{# Students #}
     {% if requested_students %}
         {% if students_exists %}
             <h4>Students</h4>
@@ -132,15 +192,42 @@
                         <th scope="col" style="border: 1px solid black;"> First Name </th>
                         <th scope="col" style="border: 1px solid black;"> Last Name </th>
                         <th scope="col" style="border: 1px solid black;"> Email </th>
+                        <th scope="col" style="border: 1px solid black;"> Total Grade </th>
+                        <th scope="col" style="border: 1px solid black;"> Action </th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for user in students_lst %}
+                    {% for student_record in students_lst %}
                         <tr>
-                            <td style="border: 1px solid black;padding: 5px" align="center">{{ user.id }}</td>
-                            <td style="border: 1px solid black;padding: 5px" align="center">{{ user.first_name }}</td>
-                            <td style="border: 1px solid black;padding: 5px" align="center">{{ user.last_name }}</td>
-                            <td style="border: 1px solid black;padding: 5px" align="center">{{ user.email }}</td>
+                            <td style="border: 1px solid black;padding: 5px" align="center">{{ student_record.user.id }}</td>
+                            <td style="border: 1px solid black;padding: 5px" align="center">{{ student_record.user.first_name }}</td>
+                            <td style="border: 1px solid black;padding: 5px" align="center">{{ student_record.user.last_name }}</td>
+                            <td style="border: 1px solid black;padding: 5px" align="center">{{ student_record.user.email }}</td>
+                            <td style="border: 1px solid black;padding: 5px" align="center">
+                            {% if requested_final_grade_update %}
+                                <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&final_grade=True&assignment_id={{ assignment_details.id }}&student_record={{ student_record.id }}" method="POST"> {% csrf_token %}
+                                    {% if student_record.final_grade is None %}
+                                        <input type="text" name="grade" placeholder="{{ student_record.final_grade }}" required>
+                                    {% else %}
+                                        <input type="text" name="grade" value="{{ student_record.final_grade }}" required>
+                                    {% endif %}
+                                    <input type="submit" value="Save">
+                                </form>
+                            {% else %}
+                                <form>
+                                    <input type="text" name="grade" value="{{ student_record.final_grade }}" readonly>
+                                </form>
+                            {% endif %}
+                        </td>
+                        {% if requested_final_grade_update %}
+                            <td style="border: 1px solid black; padding: 5px" align="center">
+                            Update the grade and click 'Save'
+                            </td>
+                        {% else %}
+                            <td style="border: 1px solid black; padding: 5px" align="center">
+                                <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment_details.id }}&request_update_final_grade=True"> Update Grade </a>
+                            </td>
+                        {% endif %}
                         </tr>
                     {% endfor %}
                 </tbody>
