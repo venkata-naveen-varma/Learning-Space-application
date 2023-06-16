@@ -3,6 +3,7 @@
 {% block body %}
     <a href="{% url 'student_home' %}">Home</a>
     <h1>Student Home</h1>
+    <a href="{% url 'student_home' %}?request_profile=True">Profile</a>
     {% if course_exist %}
         <h4>Courses</h4>
         <table>
@@ -16,11 +17,31 @@
                 {% for course in course_list %}
                     <tr>
                         <td style="border: 1px solid black; padding: 5px" align="center">{{ course.id }}</td>
-                        <td style="border: 1px solid black; padding: 5px" align="center">{{ course.name }}</td>
+                        <td style="border: 1px solid black; padding: 5px" align="center"><a href="{% url 'student_course_details' %}?course_id={{ course.id }}"> {{ course.name }} </a></td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     {% endif %}
+
+    {% if requested_profile %}
+        <a href="{% url 'student_home' %}?req_update_profile=True">Update Profile</a>
+        <h3> Details </h3>
+        ID: {{ user_details.id }}
+        <br>First Name: {{ user_details.first_name }}
+        <br>Last Name: {{ user_details.last_name }}
+        <br>Email: {{ user_details.email }}
+    {% endif %}
+    {% if req_update_profile %}
+        <br>
+        <form action="{% url 'student_home' %}" method="POST"> {% csrf_token %}
+            <label> First Name </label>
+            <input type="text" name="first_name" value="{{ user_details.first_name }}" required/> <br> <br>
+            <label> Last Name </label>
+            <input type="text" name="last_name" value="{{ user_details.last_name }}" required/> <br> <br>
+            <button type="submit">Update</button>
+        </form>
+    {% endif %}
+
     <br> <br> {{ msg }}
 {% endblock %}

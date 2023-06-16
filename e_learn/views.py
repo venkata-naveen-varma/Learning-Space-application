@@ -2,11 +2,15 @@ from django.shortcuts import render, HttpResponse, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .models import User, Institution, Course, UserCourseRelation, Assignment, AssignmentGrades, UserInstitutionRelation, Subscription, Notes
+from .models import User, Institution, Course, UserCourseRelation, Assignment, AssignmentGrades, \
+    UserInstitutionRelation, Subscription, Notes
+from django.views import View
+
 
 def home(request):
     """ Dashboard of the application """
     return render(request, 'home.html')
+
 
 def signup_func(request, user_type):
     """function to perform registration operation for a new user"""
@@ -26,7 +30,7 @@ def signup_func(request, user_type):
             new_password2 = request.POST.get('password2')
             new_email = request.POST.get('email')
         try:
-            username_exists = User.objects.get(username=new_email)
+            username_exists = get(username=new_email)
         except Exception as e:
             username_exists = None
 
@@ -49,7 +53,8 @@ def signup_func(request, user_type):
                 return render(request, 'instructor_signup.html', msg)
         else:
             if user_type == "institution":
-                new_user = User(first_name=new_name, username=new_email, email=new_email, password=new_password1, is_institution=True)
+                new_user = User(first_name=new_name, username=new_email, email=new_email, password=new_password1,
+                                is_institution=True)
                 new_user.save()
                 new_institution = Institution(name=new_name, user=new_user)
                 new_institution.save()
@@ -57,14 +62,16 @@ def signup_func(request, user_type):
                 new_subscription.save()
                 return render(request, 'login.html', {'msg': "Registered Successfully!"})
             elif user_type == "student":
-                new_user = User(first_name=new_first_name, last_name=new_last_name, email=new_email, password=new_password1, is_student=True, username=new_email)
+                new_user = User(first_name=new_first_name, last_name=new_last_name, email=new_email,
+                                password=new_password1, is_student=True, username=new_email)
                 new_user.save()
                 institution_obj = Institution.objects.get(user=request.user)
                 new_relation = UserInstitutionRelation(institution=institution_obj, user=new_user, is_student=True)
                 new_relation.save()
                 return render(request, 'institution_home.html', {'msg': "Student Registered Successfully!"})
             else:
-                new_user = User(first_name=new_first_name, last_name=new_last_name, email=new_email, password=new_password1, is_instructor=True, username=new_email)
+                new_user = User(first_name=new_first_name, last_name=new_last_name, email=new_email,
+                                password=new_password1, is_instructor=True, username=new_email)
                 new_user.save()
                 institution_obj = Institution.objects.get(user=request.user)
                 new_relation = UserInstitutionRelation(institution=institution_obj, user=new_user, is_instructor=True)
@@ -78,17 +85,21 @@ def signup_func(request, user_type):
         else:
             return render(request, 'instructor_signup.html')
 
+
 def student_signup(request):
     """ Create a new Student, path='student/signup' """
     return signup_func(request, "student")
+
 
 def instructor_signup(request):
     """ Create a new Instructor, path='instructor/signup' """
     return signup_func(request, "instructor")
 
+
 def institution_signup(request):
     """ Create a new Institution, path='institution/signup' """
     return signup_func(request, "institution")
+
 
 def payment(request):
     """ Validate institution details and Payment gateway page, path='payment' """
@@ -99,7 +110,7 @@ def payment(request):
         new_password2 = request.POST.get('password2')
         currency = request.POST.get('currency')
         try:
-            username_found = User.objects.get(username=new_email)
+            username_found = get(username=new_email)
         except Exception as e:
             username_found = None
         if username_found is None:
@@ -110,25 +121,33 @@ def payment(request):
                 else:
                     amount_to_be_paid = 3500
                 if currency == 'USD':
-                    amount_to_be_paid = amount_to_be_paid*0.74
-                institution_details = {"name": new_name, "email": new_email, "password": new_password1, "amount": amount_to_be_paid, "plan": plan, "currency": currency}
+                    amount_to_be_paid = amount_to_be_paid * 0.74
+                institution_details = {"name": new_name, "email": new_email, "password": new_password1,
+                                       "amount": amount_to_be_paid, "plan": plan, "currency": currency}
                 request.session["institution_details"] = institution_details
                 return render(request, 'payment.html', institution_details)
             else:
                 return render(request, 'institution_signup.html', {'msg': "Passwords do not match!!!"})
         else:
-            return render(request, 'institution_signup.html', {'msg': "Institution name already exists! Try a different name!"})
+            return render(request, 'institution_signup.html',
+                          {'msg': "Institution name already exists! Try a different name!"})
     return render(request, 'institution_signup.html')
 
-def login_user(request):
-    """ Login for both Students and Instructors, path='login' """
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+
+class LoginUserView(View):
+    """ class based view to perform login operation, path='login' """
+    template_name = "login.html"
+
+    def get(self, request, *args, **kwargs):
+        return render(self.request, self.template_name)
+
+    def post(self, request, *args, **kwargs):
+        email = self.request.POST.get('email')
+        password = self.request.POST.get('password')
         try:
             user = User.objects.get(email=email)
         except Exception as e:
-            return render(request, 'login.html', {'msg': "Username or Password is incorrect!!!"})
+            return {'msg': "Username or Password is incorrect!!!"}
         if user is not None:
             user_password = user.password
             if password == user_password:
@@ -140,17 +159,17 @@ def login_user(request):
                 else:
                     return redirect('instructor_home')
             else:
-                return render(request, 'login.html', {'msg': "Username or Password is incorrect!!!"})
+                return {'msg': "Username or Password is incorrect!!!"}
         else:
-            return render(request, 'login.html', {'msg': "Username or Password is incorrect!!!"})
-    else:
-        return render(request, 'login.html')
+            return {'msg': "Username or Password is incorrect!!!"}
+
 
 @login_required(login_url='logout')
 def logout_user(request):
     """ logout users, path='logout' """
     logout(request)
     return redirect('login')
+
 
 @login_required(login_url='institution_login')
 def institution_home(request):
@@ -165,7 +184,7 @@ def institution_home(request):
     # update profile details
     if request.method == 'POST':
         institution_name = request.POST.get('institution_name')
-        user_details = User.objects.get(pk=request.user.id)
+        user_details = get(pk=request.user.id)
         institution_details = Institution.objects.get(user=request.user)
         user_details.first_name = institution_name
         institution_details.name = institution_name
@@ -175,10 +194,11 @@ def institution_home(request):
         send_data['msg'] = 'Profile updated successfully.'
     # display profile details
     if requested_profile is not None:
-        send_data['user_details'] = User.objects.get(pk=request.user.id)
+        send_data['user_details'] = get(pk=request.user.id)
         send_data['requested_profile'] = True
         return render(request, 'institution_home.html', send_data)
     return render(request, 'institution_home.html')
+
 
 def user_courses(request):
     """ function to get all courses of a user """
@@ -191,19 +211,9 @@ def user_courses(request):
     except Exception as e:
         return None
 
-@login_required(login_url='login')
-def student_home(request):
-    """ Student's Home Page, path='student/home' """
-    courses_lst = user_courses(request)
-    if courses_lst is None or len(courses_lst) == 0:
-        return render(request, 'student_home.html', {'msg': "You don't have any courses to display."})
-    return render(request, 'student_home.html', {'course_list': courses_lst, 'course_exist': True})
 
-@login_required(login_url='login')
-def instructor_home(request):
-    """ Instructor's Home Page, path=instructor/home
-    features: profile, home, Course list
-    """
+def common_home(request):
+    """ function to display student and instructor home details """
     courses_lst = user_courses(request)
     send_data = {}
     requested_profile = request.GET.get('request_profile')
@@ -211,12 +221,12 @@ def instructor_home(request):
     if request.GET.get('req_update_profile') is not None:
         send_data['user_details'] = request.user
         send_data['req_update_profile'] = True
-        return render(request, 'instructor_home.html', send_data)
+        return send_data
     # update profile details
     if request.method == 'POST':
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
-        user_details = User.objects.get(pk=request.user.id)
+        user_details = get(pk=request.user.id)
         user_details.first_name = first_name
         user_details.last_name = last_name
         user_details.save()
@@ -224,13 +234,34 @@ def instructor_home(request):
         send_data['msg'] = 'Profile updated successfully.'
     # display profile details
     if requested_profile is not None:
-        send_data['user_details'] = User.objects.get(pk=request.user.id)
+        send_data['user_details'] = get(pk=request.user.id)
         send_data['requested_profile'] = True
-        return render(request, 'instructor_home.html', send_data)
+        return send_data
     # display course list
     if courses_lst is None or len(courses_lst) == 0:
-        return render(request, 'instructor_home.html', {'msg': "You don't have any courses to display."})
-    return render(request, 'instructor_home.html', {'course_list': courses_lst, 'course_exist': True})
+        send_data = {'msg': "You don't have any courses to display."}
+        return send_data
+    send_data = {'course_list': courses_lst, 'course_exist': True}
+    return send_data
+
+
+@login_required(login_url='login')
+def student_home(request):
+    """ Student's Home Page, path='student/home'
+    features: profile, home, Course list
+    """
+    send_data = common_home(request)
+    return render(request, 'student_home.html', send_data)
+
+
+@login_required(login_url='login')
+def instructor_home(request):
+    """ Instructor's Home Page, path=instructor/home
+    features: profile, home, Course list
+    """
+    send_data = common_home(request)
+    return render(request, 'instructor_home.html', send_data)
+
 
 @login_required(login_url='institution_login')
 def create_course(request):
@@ -252,6 +283,7 @@ def create_course(request):
     else:
         return render(request, 'create_course.html')
 
+
 @login_required(login_url='institution_login')
 def course_list(request):
     """ Listing all courses of an Institution, path='course/list """
@@ -262,10 +294,12 @@ def course_list(request):
     try:
         course_lst = Course.objects.filter(institution=current_institution)
         if len(course_lst) == 0:
-            return render(request, 'institution_home.html', {'msg': 'Course not created yet, try creating a new course!'})
+            return render(request, 'institution_home.html',
+                          {'msg': 'Course not created yet, try creating a new course!'})
         return render(request, 'course_list.html', {'course_list': course_lst, 'course_exist': True})
     except Exception as e:
         return render(request, 'institution_home.html', {'msg': 'Course not created yet, try creating a new course!'})
+
 
 @login_required(login_url='institution_login')
 def student_list(request):
@@ -280,10 +314,13 @@ def student_list(request):
         for i in details_lst:
             student_lst.append(i.user)
         if len(student_lst) == 0:
-            return render(request, 'institution_home.html', {'msg': 'Students not registered yet, try registering a new student!'})
+            return render(request, 'institution_home.html',
+                          {'msg': 'Students not registered yet, try registering a new student!'})
         return render(request, 'institution_users_list.html', {'user_list': student_lst, 'student_exist': True})
     except Exception as e:
-        return render(request, 'institution_home.html', {'msg': 'Students not registered yet, try registering a new student!'})
+        return render(request, 'institution_home.html',
+                      {'msg': 'Students not registered yet, try registering a new student!'})
+
 
 @login_required(login_url='institution_login')
 def instructor_list(request):
@@ -298,10 +335,13 @@ def instructor_list(request):
         for i in details_lst:
             instructor_lst.append(i.user)
         if len(instructor_lst) == 0:
-            return render(request, 'institution_home.html', {'msg': 'Instructors not registered yet, try registering a new Instructor!'})
+            return render(request, 'institution_home.html',
+                          {'msg': 'Instructors not registered yet, try registering a new Instructor!'})
         return render(request, 'institution_users_list.html', {'user_list': instructor_lst, 'instructor_exist': True})
     except Exception as e:
-        return render(request, 'institution_home.html', {'msg': 'Instructors not registered yet, try registering a new Instructor!'})
+        return render(request, 'institution_home.html',
+                      {'msg': 'Instructors not registered yet, try registering a new Instructor!'})
+
 
 def course_users(course_id):
     """ function to get all students, instructors of a course from course-id """
@@ -321,6 +361,7 @@ def course_users(course_id):
     except Exception as e:
         return None
 
+
 @login_required(login_url="institution_login")
 def display_course_data(request):
     """ Getting all users of a course and course details to display to institution, path='course/details-all' """
@@ -337,13 +378,17 @@ def display_course_data(request):
     instructor_exists = True
     if data is None:
         course = Course.objects.get(id=course_id)
-        return render(request, "course_data_to_institution.html", {'course_details': course, 'msg': "No Student or Instructor is assigned to this course yet."})
+        return render(request, "course_data_to_institution.html",
+                      {'course_details': course, 'msg': "No Student or Instructor is assigned to this course yet."})
     if data["instructor"] is None:
         instructor_exists = False
     if len(data["students_lst"]) == 0:
         students_exists = False
-    send_data = {'course_details': data["course"], 'students_lst': data["students_lst"], 'instructor': data["instructor"], 'instructor_exists': instructor_exists, 'students_exists': students_exists}
+    send_data = {'course_details': data["course"], 'students_lst': data["students_lst"],
+                 'instructor': data["instructor"], 'instructor_exists': instructor_exists,
+                 'students_exists': students_exists}
     return render(request, "course_data_to_institution.html", send_data)
+
 
 def institution_users(request, user_type):
     """ function to get a list of all students or instructors in an institution """
@@ -372,7 +417,7 @@ def display_add_students_to_course(request):
         course_id = request.POST.get('course_id')
         user_id = request.POST.get('user_id')
         course_details = Course.objects.get(id=int(course_id))
-        user_details = User.objects.get(id=user_id)
+        user_details = get(id=user_id)
         new_relation = UserCourseRelation(user=user_details, course=course_details, is_student=True)
         new_relation.save()
         msg = "Student added to course successfully."
@@ -382,7 +427,8 @@ def display_add_students_to_course(request):
 
     data = institution_users(request, "student")
     if not data["users_exist"]:
-        return render(request, 'student_signup.html', {"msg": 'Students not registered in the institution yet, try registering a new student!'})
+        return render(request, 'student_signup.html',
+                      {"msg": 'Students not registered in the institution yet, try registering a new student!'})
     relations = UserCourseRelation.objects.filter(course=course_details)
     students_lst = []
     relations_user = []
@@ -392,12 +438,18 @@ def display_add_students_to_course(request):
         if user not in relations_user:
             students_lst.append(user)
     if len(relations) != 0 and len(students_lst) == 0:
-        return render(request, 'add_students_to_course.html', {'course_details': course_details, 'msg': "No new students to add to this course."})
+        return render(request, 'add_students_to_course.html',
+                      {'course_details': course_details, 'msg': "No new students to add to this course."})
     if len(relations) == 0:
         students_lst = data["users_lst"]
     if msg is not None:
-        return render(request, 'add_students_to_course.html', {"course_details": course_details, "students_lst": students_lst, "student_exists": data["users_exist"], "msg": msg})
-    return render(request, 'add_students_to_course.html', {"course_details": course_details, "students_lst": students_lst, "student_exists": data["users_exist"]})
+        return render(request, 'add_students_to_course.html',
+                      {"course_details": course_details, "students_lst": students_lst,
+                       "student_exists": data["users_exist"], "msg": msg})
+    return render(request, 'add_students_to_course.html',
+                  {"course_details": course_details, "students_lst": students_lst,
+                   "student_exists": data["users_exist"]})
+
 
 @login_required(login_url="institution_login")
 def display_add_instructor_to_course(request):
@@ -408,7 +460,7 @@ def display_add_instructor_to_course(request):
         course_id = request.POST.get('course_id')
         user_id = request.POST.get('user_id')
         course_details = Course.objects.get(id=int(course_id))
-        user_details = User.objects.get(id=user_id)
+        user_details = get(id=user_id)
         try:
             course_relation = UserCourseRelation.objects.get(course=course_details, is_instructor=True)
         except Exception as e:
@@ -429,7 +481,8 @@ def display_add_instructor_to_course(request):
 
     data = institution_users(request, "instructor")
     if not data["users_exist"]:
-        return render(request, 'instructor_signup.html', {"msg": 'Instructors not registered in the institution yet, try registering a new instructor!'})
+        return render(request, 'instructor_signup.html',
+                      {"msg": 'Instructors not registered in the institution yet, try registering a new instructor!'})
     relations = UserCourseRelation.objects.filter(course=course_details)
     instructors_lst = []
     relations_user = []
@@ -439,12 +492,18 @@ def display_add_instructor_to_course(request):
         if user not in relations_user:
             instructors_lst.append(user)
     if len(relations) != 0 and len(instructors_lst) == 0:
-        return render(request, 'add_instructor_to_course.html', {'course_details': course_details, 'msg': "No new instructors to add to this course."})
+        return render(request, 'add_instructor_to_course.html',
+                      {'course_details': course_details, 'msg': "No new instructors to add to this course."})
     elif len(relations) == 0:
         instructors_lst = data["users_lst"]
     if msg is not None:
-        return render(request, 'add_instructor_to_course.html', {"course_details": course_details, "instructors_lst": instructors_lst, "instructor_exists": data["users_exist"], "msg": msg})
-    return render(request, 'add_instructor_to_course.html', {"course_details": course_details, "instructors_lst": instructors_lst, "instructor_exists": data["users_exist"]})
+        return render(request, 'add_instructor_to_course.html',
+                      {"course_details": course_details, "instructors_lst": instructors_lst,
+                       "instructor_exists": data["users_exist"], "msg": msg})
+    return render(request, 'add_instructor_to_course.html',
+                  {"course_details": course_details, "instructors_lst": instructors_lst,
+                   "instructor_exists": data["users_exist"]})
+
 
 @login_required(login_url='institution_login')
 def remove_course(request):
@@ -457,6 +516,7 @@ def remove_course(request):
         return redirect('complete_course_details')
     course_details.delete()
     return redirect('course_list')
+
 
 @login_required(login_url='institution_login')
 def remove_user_from_course(request):
@@ -483,6 +543,7 @@ def course_notes(course_id):
     except Exception as e:
         return None
 
+
 def course_assignments(course_id):
     """ function to fetch all assignments of a course """
     try:
@@ -493,12 +554,14 @@ def course_assignments(course_id):
     except Exception as e:
         return None
 
+
 def create_assignmentgrade_relation(assignment_details, course_id):
     """ function to create assignmentgrade relations in the DB """
     course_students = course_users(course_id)['students_lst']
     for student in course_students:
         new_relation = AssignmentGrades(grade=None, assignment=assignment_details, user=student)
         new_relation.save()
+
 
 @login_required(login_url='login')
 def instructor_course_details(request):
@@ -572,7 +635,9 @@ def instructor_course_details(request):
             assignment_gradepoints = request.POST.get('assignment_gradepoints')
             # create a new assignment record
             if request.GET.get('update') is None:
-                new_assignment = Assignment(name=assignment_name, content=assignment_content, deadline=assignment_deadline, course=course_data, grade_points=assignment_gradepoints)
+                new_assignment = Assignment(name=assignment_name, content=assignment_content,
+                                            deadline=assignment_deadline, course=course_data,
+                                            grade_points=assignment_gradepoints)
                 new_assignment.save()
                 create_assignmentgrade_relation(new_assignment, course_id)
             # update an assignment record
@@ -691,5 +756,49 @@ def instructor_course_details(request):
         students_lst = AssignmentGrades.objects.filter(assignment=assignment_id)
         send_data["students_lst"] = students_lst
         send_data["assignment_details"] = assignment_details
-
     return render(request, "course_data_to_instructor.html", send_data)
+
+@login_required(login_url='login')
+def student_course_details(request):
+    """ display course details(notes, assignments, students) for instructor(user), path='instructor/course' with different query parameters
+    features: Course details, Instructor, Lectures(notes), Assignments
+    """
+    send_data = {}
+    template = "course_data_to_student.html"
+    course_id = request.GET.get('course_id')
+    course_data = None
+    if course_id is not None:
+        course_data = Course.objects.get(pk=course_id)
+        send_data["course_details"] = course_data
+    assignment_id = request.GET.get('assignment_id')
+    # notes
+    req_notes = request.GET.get('request_notes')
+    # assignments
+    req_assignments = request.GET.get('request_assignments')
+    requested_notes = False
+    requested_assignments = False
+    if req_notes is not None:
+        requested_notes = True
+        send_data['requested_notes'] = True
+    elif req_assignments is not None:
+        requested_assignments = True
+        send_data['requested_assignments'] = True
+
+    # display assignments of a course
+    if requested_assignments:
+        assignments_data = course_assignments(course_id)
+        if assignments_data is None:
+            send_data['msg'] = "No assignments created for this course."
+            return render(request, template, send_data)
+        send_data['assignment_list'] = assignments_data
+        return render(request, template, send_data)
+
+    # display notes of a course
+    if requested_notes:
+        notes_data = course_notes(course_id)
+        if notes_data is None:
+            send_data['msg'] = "No notes created for this course."
+            return render(request, template, send_data)
+        send_data['notes_list'] = notes_data
+        return render(request, template, send_data)
+    return render(request, template, send_data)

@@ -204,30 +204,30 @@
                             <td style="border: 1px solid black;padding: 5px" align="center">{{ student_record.user.last_name }}</td>
                             <td style="border: 1px solid black;padding: 5px" align="center">{{ student_record.user.email }}</td>
                             <td style="border: 1px solid black;padding: 5px" align="center">
+                                {% if requested_final_grade_update %}
+                                    <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&final_grade=True&assignment_id={{ assignment_details.id }}&student_record={{ student_record.id }}" method="POST"> {% csrf_token %}
+                                        {% if student_record.final_grade is None %}
+                                            <input type="text" name="grade" placeholder="{{ student_record.final_grade }}" required>
+                                        {% else %}
+                                            <input type="text" name="grade" value="{{ student_record.final_grade }}" required>
+                                        {% endif %}
+                                        <input type="submit" value="Save">
+                                    </form>
+                                {% else %}
+                                    <form>
+                                        <input type="text" name="grade" value="{{ student_record.final_grade }}" readonly>
+                                    </form>
+                                {% endif %}
+                            </td>
                             {% if requested_final_grade_update %}
-                                <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&final_grade=True&assignment_id={{ assignment_details.id }}&student_record={{ student_record.id }}" method="POST"> {% csrf_token %}
-                                    {% if student_record.final_grade is None %}
-                                        <input type="text" name="grade" placeholder="{{ student_record.final_grade }}" required>
-                                    {% else %}
-                                        <input type="text" name="grade" value="{{ student_record.final_grade }}" required>
-                                    {% endif %}
-                                    <input type="submit" value="Save">
-                                </form>
+                                <td style="border: 1px solid black; padding: 5px" align="center">
+                                Update the grade and click 'Save'
+                                </td>
                             {% else %}
-                                <form>
-                                    <input type="text" name="grade" value="{{ student_record.final_grade }}" readonly>
-                                </form>
+                                <td style="border: 1px solid black; padding: 5px" align="center">
+                                    <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment_details.id }}&request_update_final_grade=True"> Update Grade </a>
+                                </td>
                             {% endif %}
-                        </td>
-                        {% if requested_final_grade_update %}
-                            <td style="border: 1px solid black; padding: 5px" align="center">
-                            Update the grade and click 'Save'
-                            </td>
-                        {% else %}
-                            <td style="border: 1px solid black; padding: 5px" align="center">
-                                <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment_details.id }}&request_update_final_grade=True"> Update Grade </a>
-                            </td>
-                        {% endif %}
                         </tr>
                     {% endfor %}
                 </tbody>
