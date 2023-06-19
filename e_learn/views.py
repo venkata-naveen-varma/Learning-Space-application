@@ -1,11 +1,11 @@
-from django.shortcuts import render, HttpResponse, redirect
+from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .models import User, Institution, Course, UserCourseRelation, Assignment, AssignmentGrades, \
-    UserInstitutionRelation, Subscription, Notes
+from .models import User, Institution, Course, UserCourseRelation, Assignment, AssignmentGrades, UserInstitutionRelation, Subscription, Notes
 from django.views import View
-
+from django.core.files.storage import FileSystemStorage
+import os
 
 def home(request):
     """ Dashboard of the application """
@@ -53,8 +53,7 @@ def signup_func(request, user_type):
                 return render(request, 'instructor_signup.html', msg)
         else:
             if user_type == "institution":
-                new_user = User(first_name=new_name, username=new_email, email=new_email, password=new_password1,
-                                is_institution=True)
+                new_user = User(first_name=new_name, username=new_email, email=new_email, password=new_password1, is_institution=True)
                 new_user.save()
                 new_institution = Institution(name=new_name, user=new_user)
                 new_institution.save()
@@ -562,6 +561,22 @@ def create_assignmentgrade_relation(assignment_details, course_id):
         new_relation = AssignmentGrades(grade=None, assignment=assignment_details, user=student)
         new_relation.save()
 
+@login_required(login_url='login')
+def download(request):
+    """ download lecture notes and assignments, path='download/<notes or assignment id>' """
+    notes_id = request.GET.get('notes_id')
+    assignment_id = request.GET.get('assignment_id')
+    # download notes file
+    if notes_id is not None:
+        notes = get_object_or_404(Notes, pk=notes_id)
+        response = HttpResponse(notes.notes_doc, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{notes.notes_doc.name}"'
+    # download assignment file
+    else:
+        assignment = get_object_or_404(Assignment, pk=assignment_id)
+        response = HttpResponse(assignment.assignment_doc, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{Assignment.assignment_doc.name}"'
+    return response
 
 @login_required(login_url='login')
 def instructor_course_details(request):
@@ -613,16 +628,25 @@ def instructor_course_details(request):
         if request.GET.get('notes'):
             notes_name = request.POST.get('notes_name')
             notes_content = request.POST.get('notes_content')
+            notes_doc = request.FILES["notes_doc"]
             # create a new notes record
             if request.GET.get('update') is None:
-                new_notes = Notes(name=notes_name, content=notes_content, course=course_data)
+                if notes_doc:
+                    new_notes = Notes(name=notes_name, content=notes_content, course=course_data, notes_doc=notes_doc)
+                else:
+                    new_notes = Notes(name=notes_name, content=notes_content, course=course_data)
                 new_notes.save()
             # update a notes record
             else:
                 notes_id = request.GET.get('notes_id')
+                notes_doc = request.FILES["notes_doc"]
                 notes_obj = Notes.objects.get(pk=notes_id)
+                file_path = "./media/" + str(notes_obj.notes_doc)
+                if os.path.exists(file_path) and os.path.isfile(file_path):
+                    os.remove(file_path)
                 notes_obj.name = notes_name
                 notes_obj.content = notes_content
+                notes_obj.notes_doc = notes_doc
                 notes_obj.save()
             # display all notes
             requested_notes = True

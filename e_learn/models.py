@@ -43,11 +43,15 @@ class UserCourseRelation(models.Model):
     is_student = models.BooleanField(default=False)
     is_instructor = models.BooleanField(default=False)
 
+
+def get_file_path(instance, filename):
+    return "notes/" + str(instance.course.id) + "/" + str(filename)
+
 class Notes(models.Model):
     name = models.TextField()
     content = models.TextField()
-    notes_doc = models.FileField(upload_to="./notes")
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    notes_doc = models.FileField(upload_to=get_file_path)
     created_on = models.DateField(auto_now_add=True)
 
 class Assignment(models.Model):

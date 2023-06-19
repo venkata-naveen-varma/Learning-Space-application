@@ -11,22 +11,26 @@
 {# Lecure notes #}
     {% if requested_notes_create %}
         <br>
-        <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}?notes=True" method="POST"> {% csrf_token %}
+        <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&notes=True" method="POST" enctype="multipart/form-data"> {% csrf_token %}
             <label> Lecture Name </label>
             <input type="text" name="notes_name" placeholder="Enter Lecture name" required/> <br> <br>
             <label> Lecture Content </label>
             <input type="text" name="notes_content" placeholder="Lecture content" required/> <br> <br>
+            <label> Lecture Document </label>
+            <input type="file" name="notes_doc" placeholder="Select a PDF"/> <br> <br>
             <button type="submit">Create Notes</button>
         </form>
     {% endif %}
 
     {% if requested_update_notes %}
         <br>
-        <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&notes=True&update=True&notes_id={{ notes_details.id }}" method="POST"> {% csrf_token %}
+        <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&notes=True&update=True&notes_id={{ notes_details.id }}" method="POST" enctype="multipart/form-data"> {% csrf_token %}
             <label> Lecture Name </label>
             <input type="text" name="notes_name" placeholder="Enter Lecture name" value="{{ notes_details.name }}" required/> <br> <br>
             <label> Lecture Content </label>
             <input type="text" name="notes_content" placeholder="Lecture content" value="{{ notes_details.content }}"/> <br> <br>
+            <label> Lecture Document </label>
+            <input type="file" name="notes_doc" placeholder="Select a PDF" value="{{ notes_details.notes_doc }}"/> <br> <br>
             <button type="submit">Update Notes</button>
         </form>
     {% endif %}
@@ -40,6 +44,7 @@
                     <tr>
                         <th scope="col" style="border: 1px solid black;">Lecture Name</th>
                         <th scope="col" style="border: 1px solid black;">Lecture Content</th>
+                        <th scope="col" style="border: 1px solid black;">Lecture Document</th>
                         <th scope="col" style="border: 1px solid black;">Created On</th>
 {#                        <th scope="col" style="border: 1px solid black;">Notes Files</th>#}
                         <th scope="col" style="border: 1px solid black;">Actions</th>
@@ -50,7 +55,11 @@
                         <tr>
                             <td style="border: 1px solid black; padding: 5px" align="center"> {{ notes.name }} </td>
                             <td style="border: 1px solid black; padding: 5px" align="center"> {{ notes.content }} </td>
-                            <td style="border: 1px solid black; padding: 5px" align="center"> {{ notes.created_on }} </td>
+                            <td style="border: 1px solid black; padding: 5px" align="center">
+                                <a href="{% url 'download' %}?notes_id={{ notes.id }}"> {{ notes.notes_doc.name }} </a>
+                            </td>
+                            <td style="border: 1px solid black; padding: 5px" align="center"> {{ notes.created_on }}
+                            </td>
                             <td style="border: 1px solid black; padding: 5px" align="center">
                                 <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&notes_id={{ notes.id }}&request_update_notes=True"> Update </a>
                                 &nbsp;<a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&notes_id={{ notes.id }}&remove_notes=True"> Remove </a>

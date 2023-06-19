@@ -28,4 +28,6 @@ urlpatterns = [
     path('course/add-insturctor', views.display_add_instructor_to_course, name='add_instructor_to_course'),
     path('course/remove', views.remove_course, name='remove_course'),
     path('course/remove-user', views.remove_user_from_course, name='remove_user_from_course'),
+
+    path('download', views.download, name='download')
 ]
