@@ -7,6 +7,7 @@ from django.views import View
 from django.core.files.storage import FileSystemStorage
 import os
 
+
 def home(request):
     """ Dashboard of the application """
     return render(request, 'home.html')
@@ -30,7 +31,7 @@ def signup_func(request, user_type):
             new_password2 = request.POST.get('password2')
             new_email = request.POST.get('email')
         try:
-            username_exists = get(username=new_email)
+            username_exists = User.objects.get(username=new_email)
         except Exception as e:
             username_exists = None
 
@@ -53,7 +54,8 @@ def signup_func(request, user_type):
                 return render(request, 'instructor_signup.html', msg)
         else:
             if user_type == "institution":
-                new_user = User(first_name=new_name, username=new_email, email=new_email, password=new_password1, is_institution=True)
+                new_user = User(first_name=new_name, username=new_email, email=new_email, password=new_password1,
+                                is_institution=True)
                 new_user.save()
                 new_institution = Institution(name=new_name, user=new_user)
                 new_institution.save()
@@ -109,7 +111,7 @@ def payment(request):
         new_password2 = request.POST.get('password2')
         currency = request.POST.get('currency')
         try:
-            username_found = get(username=new_email)
+            username_found = User.objects.get(username=new_email)
         except Exception as e:
             username_found = None
         if username_found is None:
@@ -146,7 +148,7 @@ class LoginUserView(View):
         try:
             user = User.objects.get(email=email)
         except Exception as e:
-            return {'msg': "Username or Password is incorrect!!!"}
+            return render(self.request, self.template_name, {'msg': "Username or Password is incorrect!!!"})
         if user is not None:
             user_password = user.password
             if password == user_password:
@@ -158,9 +160,9 @@ class LoginUserView(View):
                 else:
                     return redirect('instructor_home')
             else:
-                return {'msg': "Username or Password is incorrect!!!"}
+                return render(self.request, self.template_name, {'msg': "Username or Password is incorrect!!!"})
         else:
-            return {'msg': "Username or Password is incorrect!!!"}
+            return render(self.request, self.template_name, {'msg': "Username or Password is incorrect!!!"})
 
 
 @login_required(login_url='logout')
@@ -183,7 +185,7 @@ def institution_home(request):
     # update profile details
     if request.method == 'POST':
         institution_name = request.POST.get('institution_name')
-        user_details = get(pk=request.user.id)
+        user_details = User.objects.get(pk=request.user.id)
         institution_details = Institution.objects.get(user=request.user)
         user_details.first_name = institution_name
         institution_details.name = institution_name
@@ -193,7 +195,7 @@ def institution_home(request):
         send_data['msg'] = 'Profile updated successfully.'
     # display profile details
     if requested_profile is not None:
-        send_data['user_details'] = get(pk=request.user.id)
+        send_data['user_details'] = User.objects.get(pk=request.user.id)
         send_data['requested_profile'] = True
         return render(request, 'institution_home.html', send_data)
     return render(request, 'institution_home.html')
@@ -225,7 +227,7 @@ def common_home(request):
     if request.method == 'POST':
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
-        user_details = get(pk=request.user.id)
+        user_details = User.objects.get(pk=request.user.id)
         user_details.first_name = first_name
         user_details.last_name = last_name
         user_details.save()
@@ -233,7 +235,7 @@ def common_home(request):
         send_data['msg'] = 'Profile updated successfully.'
     # display profile details
     if requested_profile is not None:
-        send_data['user_details'] = get(pk=request.user.id)
+        send_data['user_details'] = User.objects.get(pk=request.user.id)
         send_data['requested_profile'] = True
         return send_data
     # display course list
@@ -416,7 +418,7 @@ def display_add_students_to_course(request):
         course_id = request.POST.get('course_id')
         user_id = request.POST.get('user_id')
         course_details = Course.objects.get(id=int(course_id))
-        user_details = get(id=user_id)
+        user_details = User.objects.get(id=user_id)
         new_relation = UserCourseRelation(user=user_details, course=course_details, is_student=True)
         new_relation.save()
         msg = "Student added to course successfully."
@@ -459,7 +461,7 @@ def display_add_instructor_to_course(request):
         course_id = request.POST.get('course_id')
         user_id = request.POST.get('user_id')
         course_details = Course.objects.get(id=int(course_id))
-        user_details = get(id=user_id)
+        user_details = User.objects.get(id=user_id)
         try:
             course_relation = UserCourseRelation.objects.get(course=course_details, is_instructor=True)
         except Exception as e:
@@ -561,6 +563,7 @@ def create_assignmentgrade_relation(assignment_details, course_id):
         new_relation = AssignmentGrades(grade=None, assignment=assignment_details, user=student)
         new_relation.save()
 
+
 @login_required(login_url='login')
 def download(request):
     """ download lecture notes and assignments, path='download/<notes or assignment id>' """
@@ -577,6 +580,7 @@ def download(request):
         response = HttpResponse(assignment.assignment_doc, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{Assignment.assignment_doc.name}"'
     return response
+
 
 @login_required(login_url='login')
 def instructor_course_details(request):
@@ -627,26 +631,25 @@ def instructor_course_details(request):
         # Add new notes
         if request.GET.get('notes'):
             notes_name = request.POST.get('notes_name')
-            notes_content = request.POST.get('notes_content')
-            notes_doc = request.FILES["notes_doc"]
+            notes_doc = request.FILES.get("notes_doc")
             # create a new notes record
             if request.GET.get('update') is None:
                 if notes_doc:
-                    new_notes = Notes(name=notes_name, content=notes_content, course=course_data, notes_doc=notes_doc)
+                    new_notes = Notes(name=notes_name, course=course_data, notes_doc=notes_doc)
                 else:
-                    new_notes = Notes(name=notes_name, content=notes_content, course=course_data)
+                    new_notes = Notes(name=notes_name, course=course_data)
                 new_notes.save()
             # update a notes record
             else:
                 notes_id = request.GET.get('notes_id')
-                notes_doc = request.FILES["notes_doc"]
+                notes_doc = request.FILES.get("notes_doc")
                 notes_obj = Notes.objects.get(pk=notes_id)
                 file_path = "./media/" + str(notes_obj.notes_doc)
-                if os.path.exists(file_path) and os.path.isfile(file_path):
-                    os.remove(file_path)
+                if notes_doc is not None:
+                    if os.path.exists(file_path) and os.path.isfile(file_path):
+                        os.remove(file_path)
+                    notes_obj.notes_doc = notes_doc
                 notes_obj.name = notes_name
-                notes_obj.content = notes_content
-                notes_obj.notes_doc = notes_doc
                 notes_obj.save()
             # display all notes
             requested_notes = True
@@ -654,23 +657,34 @@ def instructor_course_details(request):
         # Add new assignment
         elif request.GET.get('assignment'):
             assignment_name = request.POST.get('assignment_name')
-            assignment_content = request.POST.get('assignment_content')
             assignment_deadline = request.POST.get('assignment_deadline')
             assignment_gradepoints = request.POST.get('assignment_gradepoints')
+            assignment_doc = request.FILES.get("assignment_doc")
             # create a new assignment record
             if request.GET.get('update') is None:
-                new_assignment = Assignment(name=assignment_name, content=assignment_content,
-                                            deadline=assignment_deadline, course=course_data,
-                                            grade_points=assignment_gradepoints)
+                if assignment_doc:
+                    new_assignment = Assignment(name=assignment_name,
+                                                deadline=assignment_deadline, course=course_data,
+                                                grade_points=assignment_gradepoints, assignment_doc=assignment_doc)
+                else:
+                    new_assignment = Assignment(name=assignment_name,
+                                                deadline=assignment_deadline, course=course_data,
+                                                grade_points=assignment_gradepoints)
                 new_assignment.save()
                 create_assignmentgrade_relation(new_assignment, course_id)
             # update an assignment record
             else:
                 assignment_id = request.GET.get('assignment_id')
                 assignment_obj = Assignment.objects.get(pk=assignment_id)
+                assignment_doc = request.FILES.get("assignment_doc")
+                file_path = "./media/" + str(assignment_obj.assignment_doc)
+                if assignment_doc is not None and assignment_doc != '':
+                    if os.path.exists(file_path) and os.path.isfile(file_path):
+                        os.remove(file_path)
+                    assignment_obj.assignment_doc = assignment_doc
                 assignment_obj.name = assignment_name
-                assignment_obj.content = assignment_content
-                assignment_obj.deadline = assignment_deadline
+                if assignment_deadline is not None and assignment_deadline != '':
+                    assignment_obj.deadline = assignment_deadline
                 assignment_obj.grade_points = assignment_gradepoints
                 assignment_obj.save()
             # display all assignments
@@ -700,6 +714,8 @@ def instructor_course_details(request):
         notes_id = request.GET.get('notes_id')
         try:
             notes_obj = Notes.objects.get(pk=notes_id)
+            delete_file_path = "./media/"+str(notes_obj.notes_doc)
+            os.remove(delete_file_path)
             notes_obj.delete()
         except Exception as e:
             pass
@@ -728,6 +744,9 @@ def instructor_course_details(request):
     elif req_update_assignment is not None:
         assignment_id = request.GET.get('assignment_id')
         assignment_details = Assignment.objects.get(pk=assignment_id)
+        deadline = str(assignment_details.deadline).replace(" ", "T")
+        deadline = deadline.replace("+00:00", "")
+        send_data['deadline'] = deadline
         send_data['requested_update_assignment'] = True
         send_data['assignment_details'] = assignment_details
         return render(request, 'course_data_to_instructor.html', send_data)
@@ -762,9 +781,15 @@ def instructor_course_details(request):
     if requested_students:
         users_data = UserCourseRelation.objects.filter(course=course_id)
         students_exists = True
+        students_lst = []
         if users_data is None or len(users_data) == 0:
             students_exists = False
-        send_data['students_lst'] = users_data
+            students_lst = users_data
+        else:
+            for user_record in users_data:
+                if user_record.user.is_student:
+                    students_lst.append(user_record)
+        send_data['students_lst'] = students_lst
         send_data['students_exists'] = students_exists
 
     # display assignment grade details
@@ -781,6 +806,7 @@ def instructor_course_details(request):
         send_data["students_lst"] = students_lst
         send_data["assignment_details"] = assignment_details
     return render(request, "course_data_to_instructor.html", send_data)
+
 
 @login_required(login_url='login')
 def student_course_details(request):

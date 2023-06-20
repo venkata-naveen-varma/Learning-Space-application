@@ -9,9 +9,11 @@ class User(AbstractUser):
     is_instructor = models.BooleanField(default=False)
     is_institution = models.BooleanField(default=False)
 
+
 class Institution(models.Model):
     name = models.CharField(max_length=200)
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+
 
 class Subscription(models.Model):
     currency_choices = [
@@ -24,17 +26,20 @@ class Subscription(models.Model):
     is_basic = models.BooleanField(default=False)
     is_premium = models.BooleanField(default=False)
 
+
 class UserInstitutionRelation(models.Model):
     institution = models.ForeignKey(Institution, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     is_student = models.BooleanField(default=False)
     is_instructor = models.BooleanField(default=False)
 
+
 class Course(models.Model):
     name = models.CharField(max_length=60)
     description = models.TextField(default=None, null=True, blank=True)
     # Institution that created the course
     institution = models.ForeignKey(Institution, on_delete=models.CASCADE)
+
 
 class UserCourseRelation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -44,24 +49,35 @@ class UserCourseRelation(models.Model):
     is_instructor = models.BooleanField(default=False)
 
 
-def get_file_path(instance, filename):
+def get_file_path_notes(instance, filename):
     return "notes/" + str(instance.course.id) + "/" + str(filename)
+
 
 class Notes(models.Model):
     name = models.TextField()
-    content = models.TextField()
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    notes_doc = models.FileField(upload_to=get_file_path)
+    notes_doc = models.FileField(upload_to=get_file_path_notes)
     created_on = models.DateField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_on"]
+
+
+def get_file_path_assignment(instance, filename):
+    return "assignment/" + str(instance.course.id) + "/" + str(filename)
+
 
 class Assignment(models.Model):
     name = models.TextField()
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     deadline = models.DateTimeField(null=True)
     created_on = models.DateField(auto_now_add=True)
-    assignment_doc = models.FileField()
-    content = models.TextField()
+    assignment_doc = models.FileField(upload_to=get_file_path_assignment)
     grade_points = models.IntegerField(null=True)
+
+    class Meta:
+        ordering = ["created_on"]
+
 
 class AssignmentGrades(models.Model):
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE)

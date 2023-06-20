@@ -14,8 +14,6 @@
         <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&notes=True" method="POST" enctype="multipart/form-data"> {% csrf_token %}
             <label> Lecture Name </label>
             <input type="text" name="notes_name" placeholder="Enter Lecture name" required/> <br> <br>
-            <label> Lecture Content </label>
-            <input type="text" name="notes_content" placeholder="Lecture content" required/> <br> <br>
             <label> Lecture Document </label>
             <input type="file" name="notes_doc" placeholder="Select a PDF"/> <br> <br>
             <button type="submit">Create Notes</button>
@@ -27,8 +25,6 @@
         <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&notes=True&update=True&notes_id={{ notes_details.id }}" method="POST" enctype="multipart/form-data"> {% csrf_token %}
             <label> Lecture Name </label>
             <input type="text" name="notes_name" placeholder="Enter Lecture name" value="{{ notes_details.name }}" required/> <br> <br>
-            <label> Lecture Content </label>
-            <input type="text" name="notes_content" placeholder="Lecture content" value="{{ notes_details.content }}"/> <br> <br>
             <label> Lecture Document </label>
             <input type="file" name="notes_doc" placeholder="Select a PDF" value="{{ notes_details.notes_doc }}"/> <br> <br>
             <button type="submit">Update Notes</button>
@@ -43,7 +39,6 @@
                 <thead>
                     <tr>
                         <th scope="col" style="border: 1px solid black;">Lecture Name</th>
-                        <th scope="col" style="border: 1px solid black;">Lecture Content</th>
                         <th scope="col" style="border: 1px solid black;">Lecture Document</th>
                         <th scope="col" style="border: 1px solid black;">Created On</th>
 {#                        <th scope="col" style="border: 1px solid black;">Notes Files</th>#}
@@ -54,7 +49,6 @@
                     {% for notes in notes_list %}
                         <tr>
                             <td style="border: 1px solid black; padding: 5px" align="center"> {{ notes.name }} </td>
-                            <td style="border: 1px solid black; padding: 5px" align="center"> {{ notes.content }} </td>
                             <td style="border: 1px solid black; padding: 5px" align="center">
                                 <a href="{% url 'download' %}?notes_id={{ notes.id }}"> {{ notes.notes_doc.name }} </a>
                             </td>
@@ -80,7 +74,7 @@
                 <thead>
                     <tr>
                         <th scope="col" style="border: 1px solid black;">Assignment Name</th>
-                        <th scope="col" style="border: 1px solid black;">Assignment Content</th>
+                        <th scope="col" style="border: 1px solid black;">Assignment Document</th>
                         <th scope="col" style="border: 1px solid black;">Assignment Deadline</th>
                         <th scope="col" style="border: 1px solid black;">Created On</th>
                         <th scope="col" style="border: 1px solid black;">Grade Points</th>
@@ -91,7 +85,9 @@
                     {% for assignment in assignment_list %}
                         <tr>
                             <td style="border: 1px solid black; padding: 5px" align="center"> {{ assignment.name }} </td>
-                            <td style="border: 1px solid black; padding: 5px" align="center"> {{ assignment.content }} </td>
+                            <td style="border: 1px solid black; padding: 5px" align="center">
+                                <a href="{% url 'download' %}?notes_id={{ assignment.id }}"> {{ assignment.assignment_doc.name }} </a>
+                            </td>
                             <td style="border: 1px solid black; padding: 5px" align="center"> {{ assignment.deadline }} </td>
                             <td style="border: 1px solid black; padding: 5px" align="center"> {{ assignment.created_on }} </td>
                             <td style="border: 1px solid black; padding: 5px" align="center"> {{ assignment.grade_points }} </td>
@@ -109,11 +105,11 @@
 
     {% if requested_assignment_create %}
         <br>
-        <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment=True" method="POST"> {% csrf_token %}
+        <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment=True" method="POST" enctype="multipart/form-data"> {% csrf_token %}
             <label> Assignment Name </label>
             <input type="text" name="assignment_name" placeholder="Enter Assignment name" required/> <br> <br>
-            <label> Assignment Content </label>
-            <input type="text" name="assignment_content" placeholder="Assignment content" required/> <br> <br>
+            <label> Assignment Document </label>
+            <input type="file" name="assignment_doc" placeholder="Select a PDF" required/> <br> <br>
             <label> Assignment Deadline </label>
             <input type="datetime-local" name="assignment_deadline" placeholder="Assignment Deadline" required/> <br> <br>
             <label> Assignment Grade Points </label>
@@ -124,13 +120,13 @@
 
     {% if requested_update_assignment %}
         <br>
-        <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment=True&update=True&assignment_id={{ assignment_details.id }}" method="POST"> {% csrf_token %}
+        <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment=True&update=True&assignment_id={{ assignment_details.id }}" method="POST" enctype="multipart/form-data"> {% csrf_token %}
             <label> Assignment Name </label>
             <input type="text" name="assignment_name" placeholder="Enter assignment name" value="{{ assignment_details.name }}" required/> <br> <br>
-            <label> Assignment Content </label>
-            <input type="text" name="assignment_content" placeholder="assignment content" value="{{ assignment_details.content }}"/> <br> <br>
+            <label> Assignment Document </label>
+            <input type="file" name="assignment_doc" placeholder="Select a PDF"/> <br> <br>
             <label> Assignment Deadline </label>
-            <input type="datetime-local" name="assignment_deadline" placeholder="Assignment Deadline" value="{{ assignment_details.deadline }}" required/> <br> <br>
+            <input type="datetime-local" name="assignment_deadline" value="{{ deadline }}"/> <br> <br>
             <label> Assignment Grade Points </label>
             <input type="number" name="assignment_gradepoints" placeholder="Assignment Grade Points" value="{{ assignment_details.grade_points }}" required/> <br> <br>
             <button type="submit">Update Assignment</button>
