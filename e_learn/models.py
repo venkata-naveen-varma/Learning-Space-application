@@ -78,8 +78,12 @@ class Assignment(models.Model):
     class Meta:
         ordering = ["created_on"]
 
+def get_file_path_assignment_submission(instance, filename):
+    return "submission/" + str(instance.assignment.course.id) + "/" + str(filename)
 
 class AssignmentGrades(models.Model):
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE)
     grade = models.IntegerField(blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    submitted_status = models.BooleanField(default=False)
+    assignment_doc = models.FileField(upload_to=get_file_path_assignment_submission, null=True)

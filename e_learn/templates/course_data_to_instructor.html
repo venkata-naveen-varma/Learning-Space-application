@@ -86,7 +86,7 @@
                         <tr>
                             <td style="border: 1px solid black; padding: 5px" align="center"> {{ assignment.name }} </td>
                             <td style="border: 1px solid black; padding: 5px" align="center">
-                                <a href="{% url 'download' %}?notes_id={{ assignment.id }}"> {{ assignment.assignment_doc.name }} </a>
+                                <a href="{% url 'download' %}?assignment_id={{ assignment.id }}"> {{ assignment.assignment_doc.name }} </a>
                             </td>
                             <td style="border: 1px solid black; padding: 5px" align="center"> {{ assignment.deadline }} </td>
                             <td style="border: 1px solid black; padding: 5px" align="center"> {{ assignment.created_on }} </td>

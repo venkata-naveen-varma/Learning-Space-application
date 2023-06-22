@@ -540,6 +540,8 @@ def course_notes(course_id):
         notes_data = Notes.objects.filter(course=course_id)
         if len(notes_data) == 0 or notes_data is None:
             return None
+        for notes in notes_data:
+            notes.notes_doc = str(notes.notes_doc).split('/')[-1]
         return notes_data
     except Exception as e:
         return None
@@ -551,8 +553,11 @@ def course_assignments(course_id):
         assignments_data = Assignment.objects.filter(course=course_id)
         if len(assignments_data) == 0 or assignments_data is None:
             return None
+        for assignment_record in assignments_data:
+            assignment_record.assignment_doc = str(assignment_record.assignment_doc).split('/')[-1]
         return assignments_data
     except Exception as e:
+        print(e)
         return None
 
 
@@ -578,7 +583,8 @@ def download(request):
     else:
         assignment = get_object_or_404(Assignment, pk=assignment_id)
         response = HttpResponse(assignment.assignment_doc, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="{Assignment.assignment_doc.name}"'
+        filename = str(assignment.assignment_doc.name).split("/")[-1]
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
 
@@ -726,6 +732,11 @@ def instructor_course_details(request):
         assignment_id = request.GET.get('assignment_id')
         try:
             assignment_obj = Assignment.objects.get(pk=assignment_id)
+            delete_file_path = "./media/" + str(assignment_obj.assignment_doc)
+            os.remove(delete_file_path)
+            assignments_data = AssignmentGrades.objects.filter(assignment=assignment_obj)
+            for assignment in assignments_data:
+                os.remove("./media/" + str(assignment.assignment_doc))
             assignment_obj.delete()
         except Exception as e:
             pass
@@ -807,6 +818,19 @@ def instructor_course_details(request):
         send_data["assignment_details"] = assignment_details
     return render(request, "course_data_to_instructor.html", send_data)
 
+def get_user_assignment_data(user_data, assignment_id):
+    """ function to fetch assignment data of a user """
+    try:
+        assignments_data = Assignment.objects.get(pk=assignment_id)
+        assignment_grades_relation = AssignmentGrades.objects.get(user=user_data, assignment=assignment_id)
+        assignments_data.assignmentgrades = assignment_grades_relation
+        # renaming the filenames to display to user
+        assignments_data.assignmentgrades.assignment_doc = str(assignments_data.assignmentgrades.assignment_doc).split('/')[-1]
+        assignments_data.assignment_doc = str(assignments_data.assignment_doc).split('/')[-1]
+        return assignments_data
+    except Exception as e:
+        print(e)
+        return None
 
 @login_required(login_url='login')
 def student_course_details(request):
@@ -817,14 +841,18 @@ def student_course_details(request):
     template = "course_data_to_student.html"
     course_id = request.GET.get('course_id')
     course_data = None
-    if course_id is not None:
+    if course_id is not None or course_id != '':
         course_data = Course.objects.get(pk=course_id)
+        final_grade = UserCourseRelation.objects.get(course=course_id, user=request.user).final_grade
         send_data["course_details"] = course_data
+        send_data["final_grade"] = final_grade
     assignment_id = request.GET.get('assignment_id')
     # notes
     req_notes = request.GET.get('request_notes')
     # assignments
     req_assignments = request.GET.get('request_assignments')
+    req_specific_assignment = request.GET.get('req_specific_assignment')
+    req_upload_doc = request.GET.get('upload_doc')
     requested_notes = False
     requested_assignments = False
     if req_notes is not None:
@@ -833,6 +861,28 @@ def student_course_details(request):
     elif req_assignments is not None:
         requested_assignments = True
         send_data['requested_assignments'] = True
+    elif req_specific_assignment is not None:
+        send_data["req_specific_assignment"] = True
+    elif req_upload_doc is not None:
+        req_specific_assignment = True
+        assignment_doc = request.FILES.get("assignment_doc")
+        assignmentgrade_id = request.GET.get('assignmentgrade_id')
+        assignment_obj = AssignmentGrades.objects.get(pk=assignmentgrade_id)
+        file_path = "./media/" + str(assignment_obj.assignment_doc)
+        if assignment_doc is not None and assignment_doc != '':
+            if os.path.exists(file_path) and os.path.isfile(file_path):
+                os.remove(file_path)
+            assignment_obj.assignment_doc = assignment_doc
+            assignment_obj.submitted_status = True
+            assignment_obj.save()
+        send_data['msg'] = "Assignment Submitted Successfully."
+
+    # display details of specific assignment
+    if req_specific_assignment is not None:
+        user_assignment_data = get_user_assignment_data(request.user, assignment_id)
+        send_data["assignment_data"] = user_assignment_data
+        send_data["req_specific_assignment"] = True
+        return render(request, template, send_data)
 
     # display assignments of a course
     if requested_assignments:
@@ -840,6 +890,10 @@ def student_course_details(request):
         if assignments_data is None:
             send_data['msg'] = "No assignments created for this course."
             return render(request, template, send_data)
+        for assignment in assignments_data:
+            assignmentgrade_record = AssignmentGrades.objects.get(assignment_id=assignment.id, user=request.user)
+            assignment.status = assignmentgrade_record.submitted_status
+            assignment.grade = assignmentgrade_record.grade
         send_data['assignment_list'] = assignments_data
         return render(request, template, send_data)
 
