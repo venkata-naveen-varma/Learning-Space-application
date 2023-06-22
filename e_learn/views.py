@@ -740,10 +740,13 @@ def instructor_course_details(request):
         try:
             assignment_obj = Assignment.objects.get(pk=assignment_id)
             delete_file_path = "./media/" + str(assignment_obj.assignment_doc)
-            os.remove(delete_file_path)
+            if os.path.exists(delete_file_path) and os.path.isfile(delete_file_path):
+                os.remove(delete_file_path)
             assignments_data = AssignmentGrades.objects.filter(assignment=assignment_obj)
             for assignment in assignments_data:
-                os.remove("./media/" + str(assignment.assignment_doc))
+                delete_file_path = "./media/" + str(assignment.assignment_doc)
+                if os.path.exists(delete_file_path) and os.path.isfile(delete_file_path):
+                    os.remove(delete_file_path)
             assignment_obj.delete()
         except Exception as e:
             pass
