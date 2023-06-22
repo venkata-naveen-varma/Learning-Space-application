@@ -83,7 +83,7 @@
         <h4> Grade Obtained: {{ assignment_data.assignmentgrades.grade }}/{{ assignment_data.grade_points }}</h4>
         {% if assignment_data.assignmentgrades.submitted_status == 1 %}
             <h4> Status: Submitted </h4>
-            <h4> Submitted Document: <a href="{% url 'download' %}?assignment_id={{ assignment_data.id }}"> {{ assignment_data.assignmentgrades.assignment_doc.name }} </a> </h4>
+            <h4> Submitted Document: <a href="{% url 'download' %}?assignmentgrade_id={{ assignment_data.assignmentgrades.id }}"> {{ assignment_data.assignmentgrades.assignment_doc.name }} </a> </h4>
         {% else %}
             <h4> Status: Not Submitted </h4>
         {% endif %}

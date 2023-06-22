@@ -574,14 +574,21 @@ def download(request):
     """ download lecture notes and assignments, path='download/<notes or assignment id>' """
     notes_id = request.GET.get('notes_id')
     assignment_id = request.GET.get('assignment_id')
+    assignmentgrade_id = request.GEt.get('assignmentgrade_id')
     # download notes file
     if notes_id is not None:
         notes = get_object_or_404(Notes, pk=notes_id)
         response = HttpResponse(notes.notes_doc, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{notes.notes_doc.name}"'
     # download assignment file
-    else:
+    elif assignment_id is not None:
         assignment = get_object_or_404(Assignment, pk=assignment_id)
+        response = HttpResponse(assignment.assignment_doc, content_type='application/pdf')
+        filename = str(assignment.assignment_doc.name).split("/")[-1]
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    # download submission
+    else:
+        assignment = get_object_or_404(AssignmentGrades, pk=assignmentgrade_id)
         response = HttpResponse(assignment.assignment_doc, content_type='application/pdf')
         filename = str(assignment.assignment_doc.name).split("/")[-1]
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
@@ -777,6 +784,7 @@ def instructor_course_details(request):
             send_data['msg'] = "No assignments created for this course."
             return render(request, 'course_data_to_instructor.html', send_data)
         send_data['assignment_list'] = assignments_data
+
         return render(request, 'course_data_to_instructor.html', send_data)
 
     # display notes of a course
@@ -814,6 +822,8 @@ def instructor_course_details(request):
             send_data['msg'] = "No students in the course yet."
             return render(request, "course_data_to_instructor.html", send_data)
         students_lst = AssignmentGrades.objects.filter(assignment=assignment_id)
+        for student in students_lst:
+            student.assignment_doc = str(student.assignment_doc.name).split('/')[-1]
         send_data["students_lst"] = students_lst
         send_data["assignment_details"] = assignment_details
     return render(request, "course_data_to_instructor.html", send_data)

@@ -92,9 +92,9 @@
                             <td style="border: 1px solid black; padding: 5px" align="center"> {{ assignment.created_on }} </td>
                             <td style="border: 1px solid black; padding: 5px" align="center"> {{ assignment.grade_points }} </td>
                             <td style="border: 1px solid black; padding: 5px" align="center">
-                                <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment.id }}&request_update_assignment=True"> Update </a>
+                                <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment.id }}&request_grades=True"> Submissions </a>
+                                &nbsp<a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment.id }}&request_update_assignment=True"> Update </a>
                                 &nbsp;<a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment.id }}&remove_assignment=True"> Remove </a>
-                                &nbsp <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment.id }}&request_grades=True"> Grades </a>
                             </td>
                         </tr>
                     {% endfor %}
@@ -144,6 +144,8 @@
                     <th scope="col" style="border: 1px solid black;"> First Name </th>
                     <th scope="col" style="border: 1px solid black;"> Last Name </th>
                     <th scope="col" style="border: 1px solid black;"> Email </th>
+                    <th scope="col" style="border: 1px solid black;"> Status </th>
+                    <th scope="col" style="border: 1px solid black;"> Document </th>
                     <th scope="col" style="border: 1px solid black;"> Grade </th>
                     <th scope="col" style="border: 1px solid black;"> Action </th>
                 </tr>
@@ -155,6 +157,14 @@
                         <td style="border: 1px solid black;padding: 5px" align="center">{{ student_record.user.first_name }}</td>
                         <td style="border: 1px solid black;padding: 5px" align="center">{{ student_record.user.last_name }}</td>
                         <td style="border: 1px solid black;padding: 5px" align="center">{{ student_record.user.email }}</td>
+                        {% if student_record.submitted_status == 1 %}
+                            <td style="border: 1px solid black; padding: 5px" align="center"> Submitted </td>
+                        {% else %}
+                            <td style="border: 1px solid black; padding: 5px" align="center"> Not Submitted </td>
+                        {% endif %}
+                        <td style="border: 1px solid black; padding: 5px" align="center">
+                                <a href="{% url 'download' %}?assignment_id={{ assignment.id }}"> {{ student_record.assignment_doc.name }} </a>
+                        </td>
                         <td style="border: 1px solid black;padding: 5px" align="center">
                             {% if requested_grade_update %}
                                 <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&grade=True&assignment_id={{ assignment_details.id }}&student_record={{ student_record.id }}" method="POST"> {% csrf_token %}
@@ -177,7 +187,7 @@
                             </td>
                         {% else %}
                             <td style="border: 1px solid black; padding: 5px" align="center">
-                                <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment_details.id }}&request_update_grade=True"> Update </a>
+                                <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment_details.id }}&request_update_grade=True"> Update Grade </a>
                             </td>
                         {% endif %}
                     </tr>
