@@ -163,6 +163,10 @@ class LoginUserView(View):
                 return render(self.request, self.template_name, {'msg': "Username or Password is incorrect!!!"})
         else:
             return render(self.request, self.template_name, {'msg': "Username or Password is incorrect!!!"})
+        try:
+            user = User.objects.get(email=email)
+        except Exception as e:
+            return render(self.request, self.template_name, {'msg': "Username or Password is incorrect!!!"})
 
 
 @login_required(login_url='logout')
