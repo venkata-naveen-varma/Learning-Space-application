@@ -15,6 +15,18 @@ def home(request):
     """ Dashboard of the application """
     return render(request, 'home.html')
 
+def check_user_plan(user_data):
+    """ function to know if a user has a premium plan or not """
+    try:
+        institutionUser_relation = UserInstitutionRelation.objects.get(user=user_data)
+        institution_details = Institution.objects.get(pk=institutionUser_relation.institution)
+        subscription_details = Subscription.objects.get(user=institution_details.user)
+        if subscription_details.is_basic:
+            return False
+        return True
+    except Exception as e:
+        print(e)
+        return False
 
 def send_email(recipient_mail_list, data, topic):
     """ function to send messages through emails """
@@ -456,7 +468,12 @@ def display_add_students_to_course(request):
         user_details = User.objects.get(id=user_id)
         new_relation = UserCourseRelation(user=user_details, course=course_details, is_student=True)
         new_relation.save()
-        msg = "Student added to course successfully."
+        # check if it is a premium user or not and send email
+        is_premium_user = check_user_plan(user_details)
+        if is_premium_user:
+            msg = "Student added to course successfully."
+            email_data = "Now you can access the course '{}' in the Learning Space through  http://127.0.0.1:8000/login".format(course_details.name)
+            send_email([user_details.email], email_data, "add_student_to_course")
     else:
         course_id = request.GET.get('course_id')
         course_details = Course.objects.get(id=course_id)
