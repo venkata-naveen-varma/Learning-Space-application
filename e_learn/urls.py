@@ -29,5 +29,6 @@ urlpatterns = [
     path('course/remove', views.remove_course, name='remove_course'),
     path('course/remove-user', views.remove_user_from_course, name='remove_user_from_course'),
 
-    path('download', views.download, name='download')
+    path('download', views.download, name='download'),
+    path('test', views.send_email, name='test')
 ]

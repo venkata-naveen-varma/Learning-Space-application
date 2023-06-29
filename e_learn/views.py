@@ -2,15 +2,30 @@ from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .models import User, Institution, Course, UserCourseRelation, Assignment, AssignmentGrades, UserInstitutionRelation, Subscription, Notes
+from .models import User, Institution, Course, UserCourseRelation, Assignment, AssignmentGrades, \
+    UserInstitutionRelation, Subscription, Notes
 from django.views import View
 from django.core.files.storage import FileSystemStorage
+from django.conf import settings
+from django.core.mail import send_mail
 import os
 
 
 def home(request):
     """ Dashboard of the application """
     return render(request, 'home.html')
+
+
+def send_email(recipient_mail_list, data, topic):
+    """ function to send messages through emails """
+    if topic == "signup":
+        subject = "New account created."
+        message = data
+    if topic == "":
+        pass
+    from_email = settings.EMAIL_HOST_USER
+    recipient_list = recipient_mail_list
+    send_mail(subject, message, from_email, recipient_list, fail_silently=True)
 
 
 def signup_func(request, user_type):
@@ -23,6 +38,7 @@ def signup_func(request, user_type):
             new_password2 = new_password1
             amount = request.session["institution_details"]["amount"]
             currency = request.session["institution_details"]["currency"]
+            plan = request.session["institution_details"]["plan"]
             del request.session["institution_details"]
         else:
             new_first_name = request.POST.get('first_name')
@@ -59,8 +75,14 @@ def signup_func(request, user_type):
                 new_user.save()
                 new_institution = Institution(name=new_name, user=new_user)
                 new_institution.save()
-                new_subscription = Subscription(user=new_user, amount_paid=amount, currency=currency, is_basic=True)
+                if plan == "basic":
+                    new_subscription = Subscription(user=new_user, amount_paid=amount, currency=currency, is_basic=True)
+                else:
+                    new_subscription = Subscription(user=new_user, amount_paid=amount, currency=currency, is_premium=True)
                 new_subscription.save()
+                # mailing welcome message
+                email_data = "Welcome to the learning space.\n\n Transaction details\n Amount paid: {}\n Currency: {}\n Subscribed plan: {} \n\nYou can start accessing the website from http://127.0.0.1:8000/login".format(amount, currency, plan)
+                send_email([new_email], email_data, "signup")
                 return render(request, 'login.html', {'msg': "Registered Successfully!"})
             elif user_type == "student":
                 new_user = User(first_name=new_first_name, last_name=new_last_name, email=new_email,
@@ -69,6 +91,10 @@ def signup_func(request, user_type):
                 institution_obj = Institution.objects.get(user=request.user)
                 new_relation = UserInstitutionRelation(institution=institution_obj, user=new_user, is_student=True)
                 new_relation.save()
+                # mailing student credentials
+                email_data = "Welcome to the learning space. You are enrolled as a Student.\nChange your password as early as possible.\nYour current credentials are,\nEmail: " + str(
+                    new_email) + "\nPassword: " + str(new_password1)
+                send_email([new_email], email_data, "signup")
                 return render(request, 'institution_home.html', {'msg': "Student Registered Successfully!"})
             else:
                 new_user = User(first_name=new_first_name, last_name=new_last_name, email=new_email,
@@ -77,6 +103,10 @@ def signup_func(request, user_type):
                 institution_obj = Institution.objects.get(user=request.user)
                 new_relation = UserInstitutionRelation(institution=institution_obj, user=new_user, is_instructor=True)
                 new_relation.save()
+                # mailing instructor credentials
+                email_data = "Welcome to learning space. You are enrolled as an Instructor.\nChange your password as early as possible.\nYour current credentials are,\nEmail: " + str(
+                    new_email) + "\nPassword: " + str(new_password1)
+                send_email([new_email], email_data, "signup")
                 return render(request, 'institution_home.html', {'msg': "Instructor Registered Successfully!"})
     else:
         if user_type == "institution":
@@ -323,6 +353,7 @@ def student_list(request):
                           {'msg': 'Students not registered yet, try registering a new student!'})
         return render(request, 'institution_users_list.html', {'user_list': student_lst, 'student_exist': True})
     except Exception as e:
+        print(e)
         return render(request, 'institution_home.html',
                       {'msg': 'Students not registered yet, try registering a new student!'})
 
@@ -731,7 +762,7 @@ def instructor_course_details(request):
         notes_id = request.GET.get('notes_id')
         try:
             notes_obj = Notes.objects.get(pk=notes_id)
-            delete_file_path = "./media/"+str(notes_obj.notes_doc)
+            delete_file_path = "./media/" + str(notes_obj.notes_doc)
             os.remove(delete_file_path)
             notes_obj.delete()
         except Exception as e:
@@ -835,6 +866,7 @@ def instructor_course_details(request):
         send_data["assignment_details"] = assignment_details
     return render(request, "course_data_to_instructor.html", send_data)
 
+
 def get_user_assignment_data(user_data, assignment_id):
     """ function to fetch assignment data of a user """
     try:
@@ -842,12 +874,14 @@ def get_user_assignment_data(user_data, assignment_id):
         assignment_grades_relation = AssignmentGrades.objects.get(user=user_data, assignment=assignment_id)
         assignments_data.assignmentgrades = assignment_grades_relation
         # renaming the filenames to display to user
-        assignments_data.assignmentgrades.assignment_doc = str(assignments_data.assignmentgrades.assignment_doc).split('/')[-1]
+        assignments_data.assignmentgrades.assignment_doc = \
+        str(assignments_data.assignmentgrades.assignment_doc).split('/')[-1]
         assignments_data.assignment_doc = str(assignments_data.assignment_doc).split('/')[-1]
         return assignments_data
     except Exception as e:
         print(e)
         return None
+
 
 @login_required(login_url='login')
 def student_course_details(request):
