@@ -231,9 +231,11 @@ def institution_home(request):
     # update profile details
     if request.method == 'POST':
         institution_name = request.POST.get('institution_name')
+        new_password = request.POST.get('password')
         user_details = User.objects.get(pk=request.user.id)
         institution_details = Institution.objects.get(user=request.user)
         user_details.first_name = institution_name
+        user_details.password = new_password
         institution_details.name = institution_name
         user_details.save()
         institution_details.save()
@@ -241,6 +243,12 @@ def institution_home(request):
         send_data['msg'] = 'Profile updated successfully.'
     # display profile details
     if requested_profile is not None:
+        subscription_details = Subscription.objects.get(user=request.user)
+        if subscription_details.is_basic:
+            plan = "Basic"
+        else:
+            plan = "Premium"
+        send_data['plan'] = plan
         send_data['user_details'] = User.objects.get(pk=request.user.id)
         send_data['requested_profile'] = True
         return render(request, 'institution_home.html', send_data)
@@ -273,9 +281,11 @@ def common_home(request):
     if request.method == 'POST':
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
+        new_password = request.POST.get('password')
         user_details = User.objects.get(pk=request.user.id)
         user_details.first_name = first_name
         user_details.last_name = last_name
+        user_details.password = new_password
         user_details.save()
         requested_profile = True
         send_data['msg'] = 'Profile updated successfully.'
