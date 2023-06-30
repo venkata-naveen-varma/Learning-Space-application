@@ -11,12 +11,53 @@
     <a href="{% url 'student_list' %}">List Of Students</a>
     <a href="{% url 'instructor_list' %}">List Of Instructors</a> <br>
     {% if requested_profile %}
-        <a href="{% url 'institution_home' %}?req_update_profile=True">Update Profile</a>
-        <h3> Details </h3>
+        <h2> Profile Details </h2>
         Institution Name: {{ user_details.first_name }}
         <br>Email: {{ user_details.email }}
-        <br>Plan: {{ plan }} plan
+        <br>Plan: {{ plan }}
+        <br><br><a href="{% url 'institution_home' %}?req_update_profile=True">Update Profile</a> &emsp;
+        <a href="{% url 'institution_home' %}?req_update_plan=True">Update Plan</a>
     {% endif %}
+
+    {% if req_update_plan %}
+        <h3> Plan Details </h3>
+        <br>
+        <form action="{% url 'institution_home' %}?update_plan_submit=True" method="POST"> {% csrf_token %}
+            <label> Institution Name </label>
+            <input type="text" name="name" value="{{ user_details.first_name }}" readonly/> <br> <br>
+            <label> Email/Username: </label>
+            <input type="email" name="email" value="{{ user_details.email }}" readonly/> <br> <br>
+            <label for="plan" name="plan">Choose a subscription plan:</label>
+            <select id="plan" name="plan">
+              <option value="basic">Basic</option>
+              <option value="premium">Premium</option>
+            </select> <br> <br>
+            <label for="currency" name="currency">Choose a Currency to Pay:</label>
+            <select id="currency" name="currency">
+              <option value="CAD">CAD</option>
+              <option value="USD">USD</option>
+            </select> <br> <br>
+            <button type="submit">Continue</button>
+            <a href="{% url 'institution_home' %}">Cancel</a>
+        </form>
+    {% endif %}
+
+    {% if update_plan_submit %}
+        <h2>Payment Details</h2>
+        Username: {{ name }} <br> <br>
+        Email: {{ email }} <br> <br>
+        Plan: {{ plan }} <br> <br>
+        Amount: {{ amount }} <br> <br>
+        Currency: {{ currency }} <br> <br>
+        <form action="{% url 'institution_home' %}?req_update_plan=True" method="POST"> {% csrf_token %}
+            <input type="hidden" name="plan" value="{{ plan }}"/>
+            <input type="hidden" name="currency" value="{{ currency }}"/>
+            <input type="hidden" name="amount_paid" value="{{ amount }}"/>
+            <button type="submit">Pay</button> &nbsp;
+            <a href="{% url 'institution_home' %}">Cancel</a>
+        </form>
+    {% endif %}
+
     {% if req_update_profile %}
         <br>
         <form action="{% url 'institution_home' %}" method="POST"> {% csrf_token %}

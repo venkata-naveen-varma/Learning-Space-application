@@ -221,23 +221,65 @@ def institution_home(request):
     send_data = {}
     requested_profile = request.GET.get('request_profile')
     req_update_profile = request.GET.get('req_update_profile')
+    req_update_plan = request.GET.get('req_update_plan')
+    update_plan_submit = request.GET.get('update_plan_submit')
+
     if req_update_profile is not None:
         send_data['user_details'] = request.user
         send_data['req_update_profile'] = True
         return render(request, 'institution_home.html', send_data)
-    # update profile details
+    # update profile and plan details
     if request.method == 'POST':
-        institution_name = request.POST.get('institution_name')
-        new_password = request.POST.get('password')
-        user_details = User.objects.get(pk=request.user.id)
-        institution_details = Institution.objects.get(user=request.user)
-        user_details.first_name = institution_name
-        user_details.password = make_password(new_password)
-        institution_details.name = institution_name
-        user_details.save()
-        institution_details.save()
-        requested_profile = True
-        send_data['msg'] = 'Profile updated successfully.'
+        # display the payment confirmation for plan update
+        if update_plan_submit is not None:
+            name = request.POST.get('name')
+            email = request.POST.get('email')
+            currency = request.POST.get('currency')
+            plan = request.POST.get('plan')
+            if plan == "basic":
+                amount_to_be_paid = 2000
+            else:
+                amount_to_be_paid = 3500
+            if currency == 'USD':
+                amount_to_be_paid = amount_to_be_paid * 0.74
+            send_data = {"name": name, "email": email, "currency": currency, "plan": plan, "amount": amount_to_be_paid,
+                         "update_plan_submit": True}
+            return render(request, 'institution_home.html', send_data)
+        # update the plan details in subscription model
+        if req_update_plan is not None:
+            subscription_details = Subscription.objects.get(user=request.user)
+            plan = request.POST.get('plan')
+            currency = request.POST.get('currency')
+            amount_paid = request.POST.get('amount_paid')
+            if plan == "basic":
+                subscription_details.is_basic = True
+                subscription_details.is_premium = False
+            else:
+                subscription_details.is_basic = False
+                subscription_details.is_premium = True
+            subscription_details.amount_paid = amount_paid
+            subscription_details.currency = currency
+            subscription_details.save()
+            requested_profile = True
+            send_data['msg'] = 'Plan updated successfully.'
+        # update profile details
+        else:
+            institution_name = request.POST.get('institution_name')
+            new_password = request.POST.get('password')
+            user_details = User.objects.get(pk=request.user.id)
+            institution_details = Institution.objects.get(user=request.user)
+            user_details.first_name = institution_name
+            user_details.password = make_password(new_password)
+            institution_details.name = institution_name
+            user_details.save()
+            institution_details.save()
+            requested_profile = True
+            send_data['msg'] = 'Profile updated successfully.'
+    elif req_update_plan is not None:
+        send_data['user_details'] = request.user
+        send_data['req_update_plan'] = True
+        return render(request, 'institution_home.html', send_data)
+
     # display profile details
     if requested_profile is not None:
         subscription_details = Subscription.objects.get(user=request.user)
