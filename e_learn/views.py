@@ -2,13 +2,13 @@ from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .models import User, Institution, Course, UserCourseRelation, Assignment, AssignmentGrades, \
-    UserInstitutionRelation, Subscription, Notes
+from .models import User, Institution, Course, UserCourseRelation, Assignment, AssignmentGrades, UserInstitutionRelation, Subscription, Notes
 from django.views import View
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 from django.core.mail import send_mail
 import os
+from django.contrib.auth.hashers import make_password
 
 
 def home(request):
@@ -82,8 +82,7 @@ def signup_func(request, user_type):
                 return render(request, 'instructor_signup.html', msg)
         else:
             if user_type == "institution":
-                new_user = User(first_name=new_name, username=new_email, email=new_email, password=new_password1,
-                                is_institution=True)
+                new_user = User(first_name=new_name, username=new_email, email=new_email, password=make_password(new_password1), is_institution=True)
                 new_user.save()
                 new_institution = Institution(name=new_name, user=new_user)
                 new_institution.save()
@@ -98,7 +97,7 @@ def signup_func(request, user_type):
                 return render(request, 'login.html', {'msg': "Registered Successfully!"})
             elif user_type == "student":
                 new_user = User(first_name=new_first_name, last_name=new_last_name, email=new_email,
-                                password=new_password1, is_student=True, username=new_email)
+                                password=make_password(new_password1), is_student=True, username=new_email)
                 new_user.save()
                 institution_obj = Institution.objects.get(user=request.user)
                 new_relation = UserInstitutionRelation(institution=institution_obj, user=new_user, is_student=True)
@@ -110,7 +109,7 @@ def signup_func(request, user_type):
                 return render(request, 'institution_home.html', {'msg': "Student Registered Successfully!"})
             else:
                 new_user = User(first_name=new_first_name, last_name=new_last_name, email=new_email,
-                                password=new_password1, is_instructor=True, username=new_email)
+                                password=make_password(new_password1), is_instructor=True, username=new_email)
                 new_user.save()
                 institution_obj = Institution.objects.get(user=request.user)
                 new_relation = UserInstitutionRelation(institution=institution_obj, user=new_user, is_instructor=True)
@@ -187,27 +186,16 @@ class LoginUserView(View):
     def post(self, request, *args, **kwargs):
         email = self.request.POST.get('email')
         password = self.request.POST.get('password')
-        try:
-            user = User.objects.get(email=email)
-        except Exception as e:
-            return render(self.request, self.template_name, {'msg': "Username or Password is incorrect!!!"})
+        user = authenticate(request, username=email, password=password)
         if user is not None:
-            user_password = user.password
-            if password == user_password:
-                login(request, user)
-                if user.is_institution:
-                    return redirect('institution_home')
-                elif user.is_student:
-                    return redirect('student_home')
-                else:
-                    return redirect('instructor_home')
+            login(request, user)
+            if user.is_institution:
+                return redirect('institution_home')
+            elif user.is_student:
+                return redirect('student_home')
             else:
-                return render(self.request, self.template_name, {'msg': "Username or Password is incorrect!!!"})
+                return redirect('instructor_home')
         else:
-            return render(self.request, self.template_name, {'msg': "Username or Password is incorrect!!!"})
-        try:
-            user = User.objects.get(email=email)
-        except Exception as e:
             return render(self.request, self.template_name, {'msg': "Username or Password is incorrect!!!"})
 
 
@@ -235,7 +223,7 @@ def institution_home(request):
         user_details = User.objects.get(pk=request.user.id)
         institution_details = Institution.objects.get(user=request.user)
         user_details.first_name = institution_name
-        user_details.password = new_password
+        user_details.password = make_password(new_password)
         institution_details.name = institution_name
         user_details.save()
         institution_details.save()
@@ -285,7 +273,7 @@ def common_home(request):
         user_details = User.objects.get(pk=request.user.id)
         user_details.first_name = first_name
         user_details.last_name = last_name
-        user_details.password = new_password
+        user_details.password = make_password(new_password)
         user_details.save()
         requested_profile = True
         send_data['msg'] = 'Profile updated successfully.'
