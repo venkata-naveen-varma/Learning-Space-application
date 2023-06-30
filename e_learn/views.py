@@ -15,15 +15,19 @@ def home(request):
     """ Dashboard of the application """
     return render(request, 'home.html')
 
-def check_user_plan(user_data):
+def check_user_plan(user_data, institution_user=False):
     """ function to know if a user has a premium plan or not """
     try:
-        institutionUser_relation = UserInstitutionRelation.objects.get(user=user_data)
-        institution_details = Institution.objects.get(pk=institutionUser_relation.institution)
-        subscription_details = Subscription.objects.get(user=institution_details.user)
+        if institution_user:
+            subscription_details = Subscription.objects.get(user=user_data)
+        else:
+            institutionUser_relation = UserInstitutionRelation.objects.get(user=user_data)
+            institution_details = Institution.objects.get(pk=institutionUser_relation.institution)
+            subscription_details = Subscription.objects.get(user=institution_details.user)
         if subscription_details.is_basic:
             return False
         return True
+
     except Exception as e:
         print(e)
         return False
@@ -33,11 +37,16 @@ def send_email(recipient_mail_list, data, topic):
     if topic == "signup":
         subject = "New account created."
         message = data
-    if topic == "":
-        pass
+    elif topic == "add_student_to_course" or topic == "add_instructor_to_course":
+        subject = "Welcome to a new course"
+        message = data
+    elif topic == "course_notice":
+        subject = "Course update"
+        message = data
     from_email = settings.EMAIL_HOST_USER
     recipient_list = recipient_mail_list
     send_mail(subject, message, from_email, recipient_list, fail_silently=True)
+    print("Email sent to", recipient_list[:3])
 
 
 def signup_func(request, user_type):
@@ -467,7 +476,7 @@ def display_add_students_to_course(request):
         new_relation = UserCourseRelation(user=user_details, course=course_details, is_student=True)
         new_relation.save()
         # check if it is a premium user or not and send email
-        is_premium_user = check_user_plan(user_details)
+        is_premium_user = check_user_plan(request.user, True)
         if is_premium_user:
             msg = "Student added to course successfully."
             email_data = "Now you can access the course '{}' in the Learning Space through  http://127.0.0.1:8000/login".format(course_details.name)
@@ -521,9 +530,13 @@ def display_add_instructor_to_course(request):
             new_relation = UserCourseRelation(user=user_details, course=course_details, is_instructor=True)
             new_relation.save()
         else:
-            # update user
+            # update user, that is change instructor of a course
             course_relation.user = user_details
             course_relation.save()
+        is_premium_user = check_user_plan(request.user, True)
+        if is_premium_user:
+            email_data = "You are successfully assigned to the course {}".format(course_relation.course.name)
+            send_email([user_details.email], email_data, "add_instructor_to_course")
         request.session["course_id"] = course_id
         return redirect("complete_course_details")
 
@@ -579,6 +592,11 @@ def remove_user_from_course(request):
     except Exception as e:
         request.session['course_id'] = course_id
         return redirect('complete_course_details')
+    # mailing if it is a premium user
+    is_premium_user = check_user_plan(request.user, True)
+    if is_premium_user:
+        email_data = "Unregistered from course {}".format(user_course_relation.course.name)
+        send_email([user_course_relation.user.email], email_data, "course_notice")
     user_course_relation.delete()
     request.session['course_id'] = course_id
     return redirect('complete_course_details')
@@ -644,6 +662,17 @@ def download(request):
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
+def get_student_mails_of_course(course_data):
+    """ function to list emails of all the students of a course """
+    emails_lst = []
+    all_data = course_users(course_data.id)
+    if all_data is None:
+        return emails_lst
+    students_lst = all_data["students_lst"]
+    for student in students_lst:
+        emails_lst.append(student.email)
+    return emails_lst
+
 
 @login_required(login_url='login')
 def instructor_course_details(request):
@@ -691,6 +720,8 @@ def instructor_course_details(request):
         requested_grades = True
     # perform database operations for lecture notes and assignments
     elif request.method == 'POST':
+        # check is the institution_user has a premium plan or not
+        is_premium_user = check_user_plan(request.user)
         # Add new notes
         if request.GET.get('notes'):
             notes_name = request.POST.get('notes_name')
@@ -702,6 +733,12 @@ def instructor_course_details(request):
                 else:
                     new_notes = Notes(name=notes_name, course=course_data)
                 new_notes.save()
+                # send email to premium user
+                if is_premium_user:
+                    email_data = "Lecture notes '{}' added to the course '{}' in Learning Space. Access the lecture notes through 'http://127.0.0.1:8000/login'".format(notes_name, course_data.name)
+                    recipient_list = get_student_mails_of_course(course_data)
+                    if len(recipient_list) != 0:
+                        send_email(recipient_list, email_data, "course_notice")
             # update a notes record
             else:
                 notes_id = request.GET.get('notes_id')
@@ -714,6 +751,13 @@ def instructor_course_details(request):
                     notes_obj.notes_doc = notes_doc
                 notes_obj.name = notes_name
                 notes_obj.save()
+                # send email to premium user
+                if is_premium_user:
+                    email_data = "Lecture notes '{}' of the course '{}' is updated in Learning Space. Access the lecture notes through 'http://127.0.0.1:8000/login'".format(
+                        notes_name, course_data.name)
+                    recipient_list = get_student_mails_of_course(course_data)
+                    if len(recipient_list) != 0:
+                        send_email(recipient_list, email_data, "course_notice")
             # display all notes
             requested_notes = True
             send_data['requested_notes'] = requested_notes
@@ -735,6 +779,13 @@ def instructor_course_details(request):
                                                 grade_points=assignment_gradepoints)
                 new_assignment.save()
                 create_assignmentgrade_relation(new_assignment, course_id)
+                # send email to premium user
+                if is_premium_user:
+                    email_data = "Assignment '{}' added to the course '{}' in Learning Space. Access the assignment through 'http://127.0.0.1:8000/login'".format(
+                        assignment_name, course_data.name)
+                    recipient_list = get_student_mails_of_course(course_data)
+                    if len(recipient_list) != 0:
+                        send_email(recipient_list, email_data, "course_notice")
             # update an assignment record
             else:
                 assignment_id = request.GET.get('assignment_id')
@@ -750,6 +801,13 @@ def instructor_course_details(request):
                     assignment_obj.deadline = assignment_deadline
                 assignment_obj.grade_points = assignment_gradepoints
                 assignment_obj.save()
+                # send email to premium user
+                if is_premium_user:
+                    email_data = "Assignment '{}' of the course '{}' is updated in Learning Space. Access the assignment through 'http://127.0.0.1:8000/login'".format(
+                        assignment_name, course_data.name)
+                    recipient_list = get_student_mails_of_course(course_data)
+                    if len(recipient_list) != 0:
+                        send_email(recipient_list, email_data, "course_notice")
             # display all assignments
             requested_assignments = True
             send_data['requested_assignments'] = requested_assignments
