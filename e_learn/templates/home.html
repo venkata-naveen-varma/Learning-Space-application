@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 
 {% block body %}
-    <h1>Home</h1>
-    <a href="{% url 'institution_signup' %}">Institution Signup</a>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/home.css' %}"/>
+    <a href="{% url 'institution_signup' %}" class="institutional-login-section">
+        <img src={% static "assets/institution.png" %}/>
+        <span>Institution Signup</span>
+    </a>
 {% endblock %}

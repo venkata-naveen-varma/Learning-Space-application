@@ -1,0 +1,41 @@
+.login-page{
+    display: flex;
+}
+.login-page .title{
+    color: #154cff;
+    font-size: 24px;
+    align-self: center;
+    font-weight: 700;
+}
+.login-page form{
+    display: flex;
+    flex-direction: column;
+    margin: 10% auto;
+    padding: 10px;
+    width: 350px;
+    box-shadow: 7px 7px 11px 0px rgba(0, 0, 0, 0.75);
+    -webkit-box-shadow: 7px 7px 11px 0px rgba(0, 0, 0, 0.75);
+    -moz-box-shadow: 7px 7px 11px 0px rgba(0, 0, 0, 0.75);
+}
+.login-page input{
+    margin: 10px;
+    border: none;
+    border-bottom: 1px solid #000000;
+    outline: none;
+}
+.login-page button{
+    width: 150px;
+    margin: 10px;
+    padding: 10px;
+    border: none;
+    align-self: center;
+    background-color: #154cff;
+    color: #ffffff;
+    cursor: pointer;
+    border-radius: 6px;
+    outline: none;
+}
+.login-page button a{
+    text-decoration: none;
+    color: #ffffff;
+}
