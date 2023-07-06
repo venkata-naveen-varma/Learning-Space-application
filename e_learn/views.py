@@ -9,6 +9,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 import os
 from django.contrib.auth.hashers import make_password
+from .forms import LoginForm
 
 
 def home(request):
@@ -190,23 +191,29 @@ class LoginUserView(View):
     template_name = "login.html"
 
     def get(self, request, *args, **kwargs):
-        return render(self.request, self.template_name)
+        form = LoginForm()
+        return render(self.request, self.template_name, {"form": form})
 
     def post(self, request, *args, **kwargs):
-        email = self.request.POST.get('email')
+        username = self.request.POST.get('username')
         password = self.request.POST.get('password')
-        user = authenticate(request, username=email, password=password)
-        if user is not None:
-            login(request, user)
-            if user.is_institution:
-                return redirect('institution_home')
-            elif user.is_student:
-                return redirect('student_home')
+        form = LoginForm(request, data=request.POST)
+        if form.is_valid():
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                if user.is_institution:
+                    return redirect('institution_home')
+                elif user.is_student:
+                    return redirect('student_home')
+                else:
+                    return redirect('instructor_home')
             else:
-                return redirect('instructor_home')
+                form = LoginForm()
+                return render(self.request, self.template_name, {'msg': "Username or Password is incorrect!!!", "form": form})
         else:
-            return render(self.request, self.template_name, {'msg': "Username or Password is incorrect!!!"})
-
+            form = LoginForm()
+            return render(self.request, self.template_name, {"form": form})
 
 @login_required(login_url='logout')
 def logout_user(request):

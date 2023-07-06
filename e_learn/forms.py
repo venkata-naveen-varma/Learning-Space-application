@@ -1,8 +1,9 @@
 from django import forms
-from .models import Notes
+from .models import User
+from django.contrib.auth.forms import AuthenticationForm
 
-class DocumentForm(forms.ModelForm):
-    """ To upload a file """
+class LoginForm(AuthenticationForm):
+    """ Login form to allow user to enter credentials """
     class Meta:
-        model = Notes
-        fields = ('name', 'content', 'notes_doc')
+        model = User
+        fields = ('username', 'password')

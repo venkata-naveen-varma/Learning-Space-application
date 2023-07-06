@@ -3,10 +3,11 @@
 {% block body %}
 <h1>Login</h1>
         <form action="{% url 'login' %}" method="POST"> {% csrf_token %}
-        <label> Email: </label>
-        <input type="email" name="email" placeholder="Enter your email" required/> <br> <br>
-        <label> Password: </label>
-        <input type="password" name="password" placeholder="Enter your password" required/> <br> <br>
+{#        <label> Email: </label>#}
+{#        <input type="email" name="email" placeholder="Enter your email" required/> <br> <br>#}
+{#        <label> Password: </label>#}
+{#        <input type="password" name="password" placeholder="Enter your password" required/> <br> <br>#}
+            {{ form.as_p }}
 
         <button type="submit">Login</button>
         <a href="{% url 'home' %}">Cancel</a>
