@@ -1,8 +1,13 @@
 {% extends "base_loggedIn.html" %}
 
 {% block body %}
-    <a href="{% url 'institution_home' %}">Home</a>
-    <h1>Courses</h1>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/table_pages.css' %}"/>
+    <div class="course-list-page">
+        <div class="course-list-header">
+            <a href="{% url 'institution_home' %}">Home</a>
+        </div>
+    <span class="title">Courses</span>
     {% if course_exist %}
         <table>
             <thead>
@@ -21,5 +26,6 @@
             </tbody>
         </table>
     {% endif %}
+    </div>
     <br> <br> {{ msg }}
 {% endblock %}

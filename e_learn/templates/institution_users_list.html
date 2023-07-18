@@ -1,12 +1,17 @@
 {% extends "base_loggedIn.html" %}
 
 {% block body %}
-    <a href="{% url 'institution_home' %}">Home</a>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/table_pages.css' %}"/>
+    <div class="course-list-page">
+        <div class="course-list-header">
+            <a href="{% url 'institution_home' %}">Home</a>
+        </div>
 
     {% if student_exist %}
-        <h1>Students</h1>
+        <span class="title">Students</span>
     {% else %}
-        <h1>Instructors</h1>
+        <span class="title">Instructors</span>
     {% endif %}
 
     {% if student_exist or instructor_exist %}

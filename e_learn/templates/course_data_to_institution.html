@@ -1,52 +1,70 @@
 {% extends "base_loggedIn.html" %}
 
 {% block body %}
-    <a href="{% url 'institution_home' %}">Home</a>
-    <a href="{% url 'course_list' %}">Courses</a>
-    <h3> Course: {{ course_details.name }}</h3>
-    <p>Description: {{ course_details.description }}</p>
-    <a href="{% url 'add_students_to_course' %}?course_id={{ course_details.id }}">Add students to the course</a> <br>
-    {% if instructor_exists %}
-        <a href="{% url 'add_instructor_to_course' %}?course_id={{ course_details.id }}">Change Instructor</a> <br>
-        <h4>Instructor</h4>
-        <table>
-            <thead>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/table_pages.css' %}"/>
+    <div class="course-list-page">
+        <div class="course-list-header">
+            <a href="{% url 'institution_home' %}">Home</a>
+            <a href="{% url 'course_list' %}">Courses</a>
+        </div>
+        <span class="title">Course: {{ course_details.name }}</span>
+        <p>Description: {{ course_details.description }}</p>
+        <button type="button">
+            <a href="{% url 'add_students_to_course' %}?course_id={{ course_details.id }}">Add students to the
+                course</a>
+        </button>
+        <br>
+        {% if instructor_exists %}
+            <button type="button">
+                <a href="{% url 'add_instructor_to_course' %}?course_id={{ course_details.id }}">Change Instructor</a>
+                <br>
+            </button>
+            <h4>Instructor</h4>
+            <table>
+                <thead>
                 <tr>
-                    <th scope="col" style="border: 1px solid black;"> ID </th>
-                    <th scope="col" style="border: 1px solid black;"> First Name </th>
-                    <th scope="col" style="border: 1px solid black;"> Last Name </th>
-                    <th scope="col" style="border: 1px solid black;"> Email </th>
+                    <th scope="col" style="border: 1px solid black;"> ID</th>
+                    <th scope="col" style="border: 1px solid black;"> First Name</th>
+                    <th scope="col" style="border: 1px solid black;"> Last Name</th>
+                    <th scope="col" style="border: 1px solid black;"> Email</th>
                 </tr>
-            </thead>
-            <tbody>
+                </thead>
+                <tbody>
                 <tr>
                     <td style="border: 1px solid black;padding: 5px" align="center">{{ instructor.id }}</td>
                     <td style="border: 1px solid black;padding: 5px" align="center">{{ instructor.first_name }}</td>
                     <td style="border: 1px solid black;padding: 5px" align="center">{{ instructor.last_name }}</td>
                     <td style="border: 1px solid black;padding: 5px" align="center">{{ instructor.email }}</td>
                 </tr>
-            </tbody>
-        </table>
-    {% elif students_exists %}
-        <a href="{% url 'add_instructor_to_course' %}?course_id={{ course_details.id }}">Assign Instructor</a> <br>
-        <h4>Instructor</h4>
-        This course does not have any Instructor assigned yet. <br>
-    {% else %}
-        <a href="{% url 'add_instructor_to_course' %}?course_id={{ course_details.id }}">Assign Instructor</a> <br>
-    {% endif %}
+                </tbody>
+            </table>
+        {% elif students_exists %}
+            <button type="button">
+                <a href="{% url 'add_instructor_to_course' %}?course_id={{ course_details.id }}">Assign Instructor</a>
+                <br>
+            </button>
+            <h4>Instructor</h4>
+            This course does not have any Instructor assigned yet. <br>
+        {% else %}
+            <button type="button">
+                <a href="{% url 'add_instructor_to_course' %}?course_id={{ course_details.id }}">Assign Instructor</a>
+                <br>
+            </button>
+        {% endif %}
 
-    {% if students_exists %}
-        <h4>Students</h4>
-        <table>
-            <thead>
+        {% if students_exists %}
+            <h4>Students</h4>
+            <table>
+                <thead>
                 <tr>
-                    <th scope="col" style="border: 1px solid black;"> ID </th>
-                    <th scope="col" style="border: 1px solid black;"> First Name </th>
-                    <th scope="col" style="border: 1px solid black;"> Last Name </th>
-                    <th scope="col" style="border: 1px solid black;"> Email </th>
+                    <th scope="col" style="border: 1px solid black;"> ID</th>
+                    <th scope="col" style="border: 1px solid black;"> First Name</th>
+                    <th scope="col" style="border: 1px solid black;"> Last Name</th>
+                    <th scope="col" style="border: 1px solid black;"> Email</th>
                 </tr>
-            </thead>
-            <tbody>
+                </thead>
+                <tbody>
                 {% for user in students_lst %}
                     <tr>
                         <td style="border: 1px solid black;padding: 5px" align="center">{{ user.id }}</td>
@@ -55,13 +73,13 @@
                         <td style="border: 1px solid black;padding: 5px" align="center">{{ user.email }}</td>
                     </tr>
                 {% endfor %}
-            </tbody>
-        </table>
-    {% elif instructor_exists %}
-        <br> This course does not have any students enrolled yet. <br>
-    {% endif %}
+                </tbody>
+            </table>
+        {% elif instructor_exists %}
+            <br> This course does not have any students enrolled yet. <br>
+        {% endif %}
 
-    {% if msg %}
-        <br> {{ msg }} <br>
-    {% endif %}
+        {% if msg %}
+            <br> {{ msg }} <br>
+        {% endif %}
 {% endblock %}

@@ -1,9 +1,14 @@
 {% extends "base_loggedIn.html" %}
 
 {% block body %}
-    <a href="{% url 'institution_home' %}">Home</a>
-    <a href="{% url 'course_list' %}">Courses</a>
-    <h3> Add Instructor to {{ course_details.name }}</h3>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/table_pages.css' %}"/>
+    <div class="course-list-page">
+        <div class="course-list-header">
+            <a href="{% url 'institution_home' %}">Home</a>
+            <a href="{% url 'course_list' %}">Courses</a>
+        </div>
+    <span class="title"> Add Instructor to {{ course_details.name }}</span>
     {% if msg %}
         <br> {{ msg }} <br>
     {% endif %}
@@ -39,4 +44,5 @@
             </tbody>
         </table>
     {% endif %}
+    </div>
 {% endblock %}

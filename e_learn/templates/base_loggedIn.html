@@ -3,11 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <title>E-Learning</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/base_loggedIn.css' %}"/>
 </head>
 <body>
-    <h3>E-Learning Platform</h3>
-    <a href="{% url 'logout' %}">logout</a>
+<div class="header">
+    <div class="title">E-Learning Platform</div>
+    <div class="buttons">
+        <a href="{% url 'logout' %}" class="home-btn">Logout</a>
+    </div>
+</div>
+<div class="landing-section">
     {% block body %}
     {% endblock %}
+</div>
 </body>
 </html>

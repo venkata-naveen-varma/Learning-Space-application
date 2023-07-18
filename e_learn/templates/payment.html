@@ -1,14 +1,22 @@
 {% extends "base.html" %}
 
 {% block body %}
-    <h1>Payment Details</h1>
-    Username: {{ name }} <br> <br>
-    Email: {{ email }} <br> <br>
-    Plan: {{ plan }} <br> <br>
-    Amount: {{ amount }} <br> <br>
-    Currency: {{ currency }} <br> <br>
-    <form action="{% url 'institution_signup' %}" method="POST"> {% csrf_token %}
-        <button type="submit">Pay</button> &nbsp;
-        <a href="{% url 'home' %}">Cancel</a>
-    </form>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/payment.css' %}"/>
+    <div class="payment-page">
+        <span class="title">Payment Details</span>
+        <div class="content">
+            <span>Username: {{ name }}</span>
+            <span>Email: {{ email }}</span>
+            <span>Plan: {{ plan }}</span>
+            <span>Amount: {{ amount }}</span>
+            <span>Currency: {{ currency }}</span>
+            <form action="{% url 'institution_signup' %}" method="POST"> {% csrf_token %}
+                <button type="submit">Pay</button> &nbsp;
+                <button type="button">
+                <a href="{% url 'home' %}">Cancel</a>
+            </button>
+            </form>
+        </div>
+    </div>
 {% endblock %}
