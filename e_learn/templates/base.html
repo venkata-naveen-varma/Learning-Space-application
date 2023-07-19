@@ -2,13 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Learning Space</title>
+    <title>E-Learning</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}"/>
 </head>
 <body>
-    <h1>Learning Space</h1>
-    <a href="{% url 'home' %}">Home</a>
-    <a href="{% url 'login' %}" style="text-align: right;float: right">Login</a>
+<div class="header">
+    <div class="title">E-Learning Platform</div>
+    <div class="buttons">
+        <a href="{% url 'home' %}" class="home-btn">Home</a>
+        <a href="{% url 'login' %}" class="login-btn">Login</a>
+    </div>
+</div>
+<div class="landing-section">
     {% block body %}
     {% endblock %}
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.6.5/sweetalert2.all.min.js"></script>
 </body>
 </html>
+{% load sweetify %}
+{% sweetify %}
