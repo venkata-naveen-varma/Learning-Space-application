@@ -1,27 +1,32 @@
 {% extends "base_loggedIn.html" %}
 
 {% block body %}
-    <a href="{% url 'institution_home' %}">Home</a>
-    <a href="{% url 'institution_home' %}?request_profile=True">Profile</a>
-    <a href="{% url 'course_list' %}">Courses</a>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/table_pages.css' %}"/>
+    <div class="course-list-page">
+        <div class="course-list-header">
+            <a href="{% url 'institution_home' %}">Home</a>
+            <a href="{% url 'institution_home' %}?request_profile=True">Profile</a>
+            <a href="{% url 'course_list' %}">Courses</a>
+        </div>
 
-    {% if student_exist %}
-        <h1>Students</h1>
-    {% else %}
-        <h1>Instructors</h1>
-    {% endif %}
+        {% if student_exist %}
+            <span class="title">Students</span>
+        {% else %}
+            <span class="title">Instructors</span>
+        {% endif %}
 
-    {% if student_exist or instructor_exist %}
-        <table>
-            <thead>
+        {% if student_exist or instructor_exist %}
+            <table>
+                <thead>
                 <tr>
-                    <th scope="col" style="border: 1px solid black;"> ID </th>
-                    <th scope="col" style="border: 1px solid black;"> First Name </th>
-                    <th scope="col" style="border: 1px solid black;"> Last Name </th>
-                    <th scope="col" style="border: 1px solid black;"> Email </th>
+                    <th scope="col" style="border: 1px solid black;"> ID</th>
+                    <th scope="col" style="border: 1px solid black;"> First Name</th>
+                    <th scope="col" style="border: 1px solid black;"> Last Name</th>
+                    <th scope="col" style="border: 1px solid black;"> Email</th>
                 </tr>
-            </thead>
-            <tbody>
+                </thead>
+                <tbody>
                 {% for user in user_list %}
                     <tr>
                         <td style="border: 1px solid black;padding: 5px" align="center">{{ user.id }}</td>
@@ -30,9 +35,9 @@
                         <td style="border: 1px solid black;padding: 5px" align="center">{{ user.email }}</td>
                     </tr>
                 {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
+                </tbody>
+            </table>
+        {% endif %}
 
-    <br> <br> {{ msg }}
+        <br> <br> {{ msg }}
 {% endblock %}

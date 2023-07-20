@@ -1,21 +1,25 @@
 {% extends "base_loggedIn.html" %}
 
 {% block body %}
-<h1>Student Signup</h1>
-    <form action="{% url 'student_signup' %}" method="POST"> {% csrf_token %}
-        <label> Firstname </label>
-        <input type="text" name="first_name" placeholder="Enter your first_name" required/> <br> <br>
-        <label> Lastname: </label>
-        <input type="text" name="last_name" placeholder="Enter your last_name" required/> <br> <br>
-        <label> Email/Username: </label>
-        <input type="email" name="email" placeholder="Enter your email" required/> <br> <br>
-        <label> Password: </label>
-        <input type="password" name="password1" placeholder="Enter your password" required/> <br> <br>
-        <label> Re-type Password: </label>
-        <input type="password" name="password2" placeholder="Re-type your password" required/> <br> <br>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}"/>
+    <div class="login-page">
+        <form action="{% url 'student_signup' %}" method="POST"> {% csrf_token %}
+            <span class="title">Student Signup</span>
+            <label> Firstname </label>
+            <input type="text" name="first_name" placeholder="Enter your first_name" required/> <br> <br>
+            <label> Lastname: </label>
+            <input type="text" name="last_name" placeholder="Enter your last_name" required/> <br> <br>
+            <label> Email/Username: </label>
+            <input type="email" name="email" placeholder="Enter your email" required/> <br> <br>
+            <label> Password: </label>
+            <input type="password" name="password1" placeholder="Enter your password" required/> <br> <br>
+            <label> Re-type Password: </label>
+            <input type="password" name="password2" placeholder="Re-type your password" required/> <br> <br>
+            <button type="submit">SignUp</button>
+            <a href="{% url 'institution_home' %}">Cancel</a>
+        </form>
+    </div>
 
-        <button type="submit">SignUp</button>
-        <a href="{% url 'institution_home' %}">Cancel</a>
-    </form>
     <br><br> <a> {{ msg }} </a>
 {% endblock %}
