@@ -1,0 +1,23 @@
+body{
+    margin: 0px;
+}
+.header{
+    display: flex;
+    padding: 10px;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #154cff;
+    border-radius: 0px 0px 20px 20px;
+}
+.header .title{
+    font-size: 30px;
+    color: #ffffff;
+}
+.header .buttons>a{
+    padding: 0px 10px;
+    color: #ffffff;
+    text-decoration: none;
+}
+.landing-section{
+    margin: 10px;
+}

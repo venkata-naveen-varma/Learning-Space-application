@@ -6,16 +6,17 @@
     <div class="login-page">
         <form action="{% url 'login' %}" method="POST"> {% csrf_token %}
             <span class="title">Login</span>
-            {#            <label> Email: </label>#}
-            <input type="email" name="email" placeholder="Email" required/> <br> <br>
-            {#            <label> Password: </label>#}
-            <input type="password" name="password" placeholder="Password" required/> <br> <br>
+            {#        <label> Email: </label>#}
+            {#        <input type="email" name="email" placeholder="Enter your email" required/> <br> <br>#}
+            {#        <label> Password: </label>#}
+            {#        <input type="password" name="password" placeholder="Enter your password" required/> <br> <br>#}
+            {{ form.as_p }}
 
             <button type="submit">Login</button>
             <button type="button">
                 <a href="{% url 'home' %}">Cancel</a>
             </button>
         </form>
-        <br><br> <a> {{ msg }} </a>
     </div>
+    <br><br> <a> {{ msg }} </a>
 {% endblock %}
