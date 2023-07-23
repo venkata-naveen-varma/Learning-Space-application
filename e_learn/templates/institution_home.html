@@ -1,73 +1,107 @@
 {% extends "base_loggedIn.html" %}
 
 {% block body %}
-    <a href="{% url 'institution_home' %}">Home</a>
-    <a href="{% url 'institution_home' %}?request_profile=True">Profile</a>
-    <a href="{% url 'course_list' %}">Courses</a>
-    <h1>Institution Home</h1>
-    <a href="{% url 'student_signup' %}">Register Student</a>
-    <a href="{% url 'instructor_signup' %}">Register Instructor</a>
-    <a href="{% url 'create_course' %}">Create Course</a>
-    <a href="{% url 'student_list' %}">List Of Students</a>
-    <a href="{% url 'instructor_list' %}">List Of Instructors</a> <br>
-    {% if requested_profile %}
-        <h2> Profile Details </h2>
-        Institution Name: {{ user_details.first_name }}
-        <br>Email: {{ user_details.email }}
-        <br>Plan: {{ plan }}
-        <br><br><a href="{% url 'institution_home' %}?req_update_profile=True">Update Profile</a> &emsp;
-        <a href="{% url 'institution_home' %}?req_update_plan=True">Update Plan</a>
-    {% endif %}
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/institution_home.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/profile.css' %}"/>
+    <div class="institution-page">
+        <div class="institution-header">
+            <a href="{% url 'institution_home' %}">Home</a>
+            <a href="{% url 'institution_home' %}?request_profile=True">Profile</a>
+            <a href="{% url 'course_list' %}">Courses</a>
+        </div>
+        <span class="title">Institution Home</span>
+        <div class="content">
+            <a href="{% url 'student_signup' %}">
+                <img src={% static "assets/student.png" %}/>
+                <span>Register Student</span>
+            </a>
+            <a href="{% url 'instructor_signup' %}">
+                <img src={% static "assets/instructor.png" %}/>
+                <span>Register Instructor</span></a>
+            <a href="{% url 'create_course' %}">
+                <img src={% static "assets/courses.png" %}/>
+                <span>Create Course</span></a>
+            <a href="{% url 'student_list' %}">
+                <img src={% static "assets/students.png" %}/>
+                <span>List Of Students</span></a>
+            <a href="{% url 'instructor_list' %}">
+                <img src={% static "assets/instructors.png" %}/>
+                <span>List Of Instructors</span></a>
+        </div>
+        {% if requested_profile %}
+            <h2> Profile Details </h2>
+            <div class="grid-container">
+                <div class="grid-item">Institution Name: {{ user_details.first_name }}</div>
+                <div class="grid-item">Email: {{ user_details.email }}</div>
+                <div class="grid-item">Plan: {{ plan }}</div>
+            </div>
+            <br><br><a href="{% url 'institution_home' %}?req_update_profile=True">Update Profile</a> &emsp;
+            <a href="{% url 'institution_home' %}?req_update_plan=True">Update Plan</a>
+        {% endif %}
 
-    {% if req_update_plan %}
-        <h3> Plan Details </h3>
-        <br>
-        <form action="{% url 'institution_home' %}?update_plan_submit=True" method="POST"> {% csrf_token %}
-            <label> Institution Name </label>
-            <input type="text" name="name" value="{{ user_details.first_name }}" readonly/> <br> <br>
-            <label> Email/Username: </label>
-            <input type="email" name="email" value="{{ user_details.email }}" readonly/> <br> <br>
-            <label for="plan" name="plan">Choose a subscription plan:</label>
-            <select id="plan" name="plan">
-              <option value="basic">Basic</option>
-              <option value="premium">Premium</option>
-            </select> <br> <br>
-            <label for="currency" name="currency">Choose a Currency to Pay:</label>
-            <select id="currency" name="currency">
-              <option value="CAD">CAD</option>
-              <option value="USD">USD</option>
-            </select> <br> <br>
-            <button type="submit">Continue</button>
-            <a href="{% url 'institution_home' %}">Cancel</a>
-        </form>
-    {% endif %}
+        {% if req_update_plan %}
+            <h3> Plan Details </h3>
+            <br>
+            <form action="{% url 'institution_home' %}?update_plan_submit=True" method="POST"> {% csrf_token %}
+                <label> Institution Name </label>
+                <input type="text" name="name" value="{{ user_details.first_name }}" readonly/> <br> <br>
+                <label> Email/Username: </label>
+                <input type="email" name="email" value="{{ user_details.email }}" readonly/> <br> <br>
+                <label for="plan" name="plan">Choose a subscription plan:</label>
+                <select id="plan" name="plan">
+                    <option value="basic">Basic</option>
+                    <option value="premium">Premium</option>
+                </select> <br> <br>
+                <label for="currency" name="currency">Choose a Currency to Pay:</label>
+                <select id="currency" name="currency">
+                    <option value="CAD">CAD</option>
+                    <option value="USD">USD</option>
+                </select> <br> <br>
+                <button type="submit">Continue</button>
+                <a href="{% url 'institution_home' %}">Cancel</a>
+            </form>
+        {% endif %}
 
-    {% if update_plan_submit %}
-        <h2>Payment Details</h2>
-        Username: {{ name }} <br> <br>
-        Email: {{ email }} <br> <br>
-        Plan: {{ plan }} <br> <br>
-        Amount: {{ amount }} <br> <br>
-        Currency: {{ currency }} <br> <br>
-        <form action="{% url 'institution_home' %}?req_update_plan=True" method="POST"> {% csrf_token %}
-            <input type="hidden" name="plan" value="{{ plan }}"/>
-            <input type="hidden" name="currency" value="{{ currency }}"/>
-            <input type="hidden" name="amount_paid" value="{{ amount }}"/>
-            <button type="submit">Pay</button> &nbsp;
-            <a href="{% url 'institution_home' %}">Cancel</a>
-        </form>
-    {% endif %}
+        {% if update_plan_submit %}
+            <h2>Payment Details</h2>
+            Username: {{ name }} <br> <br>
+            Email: {{ email }} <br> <br>
+            Plan: {{ plan }} <br> <br>
+            Amount: {{ amount }} <br> <br>
+            Currency: {{ currency }} <br> <br>
+            <form action="{% url 'institution_home' %}?req_update_plan=True" method="POST"> {% csrf_token %}
+                <input type="hidden" name="plan" value="{{ plan }}"/>
+                <input type="hidden" name="currency" value="{{ currency }}"/>
+                <input type="hidden" name="amount_paid" value="{{ amount }}"/>
+                <button type="submit">Pay</button> &nbsp;
+                <a href="{% url 'institution_home' %}">Cancel</a>
+            </form>
+        {% endif %}
 
-    {% if req_update_profile %}
-        <br>
-        <form action="{% url 'institution_home' %}" method="POST"> {% csrf_token %}
-            <label> Institution Name </label>
-            <input type="text" name="institution_name" placeholder="Enter institution name" value="{{ user_details.first_name }}" required/> <br> <br>
-            <label> Password </label>
-            <input type="password" name="password" placeholder="Enter new password" value="{{ user_details.password }}"/>
-            <br><br><button type="submit">Update</button>
-        </form>
-    {% endif %}
+        {% if req_update_profile %}
+            <br>
+            <div class="grid-container">
+                <form action="{% url 'institution_home' %}" method="POST"> {% csrf_token %}
+                    <div class="grid-item">
+                        <label> Institution Name </label>
+                        <input type="text" name="institution_name" placeholder="Enter institution name"
+                               value="{{ user_details.first_name }}" required/>
+                    </div>
+                    <div class="grid-item">
+                        <label> Password </label>
+                        <input type="password" name="password" placeholder="Enter new password"
+                               value="{{ user_details.password }}"/>
+                    </div>
+                    <button type="submit">Update</button>
+                </form>
+            </div>
+        {% endif %}
+    </div>
 
-    <br> <br> {{ msg }}
+    {% if msg %}
+        <script>
+            alert('{{ msg }}');
+        </script>
+    {% endif %}
 {% endblock %}

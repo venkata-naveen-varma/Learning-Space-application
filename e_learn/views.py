@@ -2,7 +2,8 @@ from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .models import User, Institution, Course, UserCourseRelation, Assignment, AssignmentGrades, UserInstitutionRelation, Subscription, Notes
+from .models import User, Institution, Course, UserCourseRelation, Assignment, AssignmentGrades, \
+    UserInstitutionRelation, Subscription, Notes
 from django.views import View
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
@@ -15,6 +16,7 @@ from .forms import LoginForm
 def home(request):
     """ Dashboard of the application """
     return render(request, 'home.html')
+
 
 def check_user_plan(user_data, institution_user=False):
     """ function to know if a user has a premium plan or not """
@@ -32,6 +34,7 @@ def check_user_plan(user_data, institution_user=False):
     except Exception as e:
         print(e)
         return False
+
 
 def send_email(recipient_mail_list, data, topic):
     """ function to send messages through emails """
@@ -92,17 +95,20 @@ def signup_func(request, user_type):
                 return render(request, 'instructor_signup.html', msg)
         else:
             if user_type == "institution":
-                new_user = User(first_name=new_name, username=new_email, email=new_email, password=make_password(new_password1), is_institution=True)
+                new_user = User(first_name=new_name, username=new_email, email=new_email,
+                                password=make_password(new_password1), is_institution=True)
                 new_user.save()
                 new_institution = Institution(name=new_name, user=new_user)
                 new_institution.save()
                 if plan == "basic":
                     new_subscription = Subscription(user=new_user, amount_paid=amount, currency=currency, is_basic=True)
                 else:
-                    new_subscription = Subscription(user=new_user, amount_paid=amount, currency=currency, is_premium=True)
+                    new_subscription = Subscription(user=new_user, amount_paid=amount, currency=currency,
+                                                    is_premium=True)
                 new_subscription.save()
                 # mailing welcome message
-                email_data = "Welcome to the learning space.\n\n Transaction details\n Amount paid: {}\n Currency: {}\n Subscribed plan: {} \n\nYou can start accessing the website from http://127.0.0.1:8000/login".format(amount, currency, plan)
+                email_data = "Welcome to the learning space.\n\n Transaction details\n Amount paid: {}\n Currency: {}\n Subscribed plan: {} \n\nYou can start accessing the website from http://127.0.0.1:8000/login".format(
+                    amount, currency, plan)
                 send_email([new_email], email_data, "signup")
                 return render(request, 'login.html', {'msg': "Registered Successfully!"})
             elif user_type == "student":
@@ -209,11 +215,18 @@ class LoginUserView(View):
                 else:
                     return redirect('instructor_home')
             else:
+                msg = "Username or Password is incorrect!!!"
+                # messages.warning(self.request, msg)
                 form = LoginForm()
-                return render(self.request, self.template_name, {'msg': "Username or Password is incorrect!!!", "form": form})
+                return render(self.request, self.template_name,
+                              {'msg': msg, "form": form})
         else:
+            msg = "Username or Password is incorrect!!!"
+            # messages.warning(self.request, msg)
             form = LoginForm()
-            return render(self.request, self.template_name, {"form": form})
+            return render(self.request, self.template_name,
+                          {'msg': "Username or Password is incorrect!!!", "form": form})
+
 
 @login_required(login_url='logout')
 def logout_user(request):
@@ -528,7 +541,8 @@ def display_add_students_to_course(request):
         is_premium_user = check_user_plan(request.user, True)
         if is_premium_user:
             msg = "Student added to course successfully."
-            email_data = "Now you can access the course '{}' in the Learning Space through  http://127.0.0.1:8000/login".format(course_details.name)
+            email_data = "Now you can access the course '{}' in the Learning Space through  http://127.0.0.1:8000/login".format(
+                course_details.name)
             send_email([user_details.email], email_data, "add_student_to_course")
     else:
         course_id = request.GET.get('course_id')
@@ -584,7 +598,7 @@ def display_add_instructor_to_course(request):
             course_relation.save()
         is_premium_user = check_user_plan(request.user, True)
         if is_premium_user:
-            email_data = "You are successfully assigned to the course {}".format(course_relation.course.name)
+            email_data = "You are successfully assigned to the course."
             send_email([user_details.email], email_data, "add_instructor_to_course")
         request.session["course_id"] = course_id
         return redirect("complete_course_details")
@@ -711,6 +725,7 @@ def download(request):
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
+
 def get_student_mails_of_course(course_data):
     """ function to list emails of all the students of a course """
     emails_lst = []
@@ -784,7 +799,8 @@ def instructor_course_details(request):
                 new_notes.save()
                 # send email to premium user
                 if is_premium_user:
-                    email_data = "Lecture notes '{}' added to the course '{}' in Learning Space. Access the lecture notes through 'http://127.0.0.1:8000/login'".format(notes_name, course_data.name)
+                    email_data = "Lecture notes '{}' added to the course '{}' in Learning Space. Access the lecture notes through 'http://127.0.0.1:8000/login'".format(
+                        notes_name, course_data.name)
                     recipient_list = get_student_mails_of_course(course_data)
                     if len(recipient_list) != 0:
                         send_email(recipient_list, email_data, "course_notice")
@@ -997,7 +1013,7 @@ def get_user_assignment_data(user_data, assignment_id):
         assignments_data.assignmentgrades = assignment_grades_relation
         # renaming the filenames to display to user
         assignments_data.assignmentgrades.assignment_doc = \
-        str(assignments_data.assignmentgrades.assignment_doc).split('/')[-1]
+            str(assignments_data.assignmentgrades.assignment_doc).split('/')[-1]
         assignments_data.assignment_doc = str(assignments_data.assignment_doc).split('/')[-1]
         return assignments_data
     except Exception as e:

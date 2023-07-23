@@ -3,12 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>Learning Space</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}"/>
 </head>
 <body>
-    <h1>Learning Space</h1>
-    <a href="{% url 'home' %}">Home</a>
-    <a href="{% url 'login' %}" style="text-align: right;float: right">Login</a>
+<div class="header">
+    <div class="title">Learning Space</div>
+    <div class="buttons">
+        <a href="{% url 'home' %}" class="home-btn">Home</a>
+        <a href="{% url 'login' %}" class="login-btn">Login</a>
+    </div>
+</div>
+<div class="landing-section">
     {% block body %}
     {% endblock %}
+</div>
 </body>
 </html>

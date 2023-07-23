@@ -1,0 +1,35 @@
+.payment-page{
+    display: flex;
+    flex-direction: column;
+}
+.payment-page .title{
+    font-size: 24px;
+    font-weight: 700;
+    padding-bottom: 20px;
+}
+.payment-page .content{
+    display: flex;
+    flex-direction: column;
+}
+.payment-page .content>span{
+    padding: 5px 0;
+}
+.payment-page form{
+    display: flex;
+}
+.payment-page button{
+    width: 150px;
+    margin: 10px;
+    padding: 10px;
+    border: none;
+    align-self: center;
+    background-color: #154cff;
+    color: #ffffff;
+    cursor: pointer;
+    border-radius: 6px;
+    outline: none;
+}
+.payment-page button a{
+    text-decoration: none;
+    color: #ffffff;
+}

@@ -1,0 +1,29 @@
+.course-list-page {
+    display: flex;
+    flex-direction: column;
+}
+
+.course-list-page .course-list-header {
+    display: flex;
+    font-size: 18px;
+}
+
+.course-list-page .course-list-header > a {
+    text-decoration: none;
+    color: #000000;
+    padding-right: 10px;
+}
+
+.course-list-page .title {
+    font-size: 24px;
+    padding: 10px 0;
+}
+
+.course-list-page button {
+    width: 200px;
+}
+
+.course-list-page button a {
+    text-decoration: none;
+    color: #000000;
+}
