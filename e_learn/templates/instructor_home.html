@@ -1,6 +1,8 @@
 {% extends "base_loggedIn.html" %}
 
 {% block body %}
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/profile.css' %}"/>
     <a href="{% url 'instructor_home' %}">Home</a>
     <h1>Instructor Home</h1>
     <a href="{% url 'instructor_home' %}?request_profile=True">Profile</a>
@@ -27,22 +29,32 @@
     {% if requested_profile %}
         <a href="{% url 'instructor_home' %}?req_update_profile=True">Update Profile</a>
         <h3> Details </h3>
-        ID: {{ user_details.id }}
-        <br>First Name: {{ user_details.first_name }}
-        <br>Last Name: {{ user_details.last_name }}
-        <br>Email: {{ user_details.email }}
+        <div class="grid-container">
+            <div class="grid-item">ID: {{ user_details.id }}</div>
+            <div class="grid-item">First Name: {{ user_details.first_name }}</div>
+            <div class="grid-item">Last Name: {{ user_details.last_name }}</div>
+            <div class="grid-item">Email: {{ user_details.email }}</div>
+        </div>
     {% endif %}
     {% if req_update_profile %}
         <br>
-        <form action="{% url 'instructor_home' %}" method="POST"> {% csrf_token %}
-            <label> First Name </label>
-            <input type="text" name="first_name" value="{{ user_details.first_name }}" required/> <br> <br>
-            <label> Last Name </label>
-            <input type="text" name="last_name" value="{{ user_details.last_name }}" required/> <br> <br>
-            <label> Password </label>
-            <input type="password" name="password" placeholder="Enter new password" value="{{ user_details.password }}"/>
-            <br><br><button type="submit">Update</button>
-        </form>
+        <div class="grid-container">
+            <form action="{% url 'instructor_home' %}" method="POST"> {% csrf_token %}
+                <div class="grid-item">
+                    <label> First Name </label>
+                    <input type="text" name="first_name" value="{{ user_details.first_name }}" required/> <br> <br>
+                </div>
+                <div class="grid-item">
+                    <label> Last Name </label>
+                    <input type="text" name="last_name" value="{{ user_details.last_name }}" required/> <br> <br>
+                </div>
+                <div class="grid-item">
+                    <label> Password </label>
+                    <input type="password" name="password" placeholder="Enter new password" value="{{ user_details.password }}"/>
+                </div>
+                <br><br><button type="submit">Update</button>
+            </form>
+        </div>
     {% endif %}
     <br> <br> {{ msg }}
 {% endblock %}
