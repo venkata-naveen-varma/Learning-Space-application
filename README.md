@@ -1,2 +1,2 @@
-# E-Learning-Platform
-An e-learning platform using Django, Python
+# Learning-Space-Platform
+An E-learning platform using Django, Python. This platform will give students and teachers an easy-to-use and engaging environment in which to access educational resources, participate in interactive learning activities, and stimulate collaboration. Our platform aims to improve the online learning experience and empower users to attain their educational goals more effectively by leveraging modern technologies, intuitive design, and personalized learning features.
