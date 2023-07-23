@@ -35,3 +35,6 @@
     -webkit-box-shadow: 7px 7px 11px 0px rgba(0, 0, 0, 0.75);
     -moz-box-shadow: 7px 7px 11px 0px rgba(0, 0, 0, 0.75);
 }
+.institution-page .content a span{
+    margin-top: 20px;
+}

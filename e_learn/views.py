@@ -215,10 +215,14 @@ class LoginUserView(View):
                 else:
                     return redirect('instructor_home')
             else:
+                msg = "Username or Password is incorrect!!!"
+                # messages.warning(self.request, msg)
                 form = LoginForm()
                 return render(self.request, self.template_name,
-                              {'msg': "Username or Password is incorrect!!!", "form": form})
+                              {'msg': msg, "form": form})
         else:
+            msg = "Username or Password is incorrect!!!"
+            # messages.warning(self.request, msg)
             form = LoginForm()
             return render(self.request, self.template_name,
                           {'msg': "Username or Password is incorrect!!!", "form": form})

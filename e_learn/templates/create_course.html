@@ -10,5 +10,9 @@
         <button type="submit">Create Course</button>
         <a href="{% url 'institution_home' %}">Cancel</a>
     </form>
-    <br><br> <a> {{ msg }} </a>
+    {% if msg %}
+        <script>
+            alert('{{ msg }}');
+        </script>
+    {% endif %}
 {% endblock %}

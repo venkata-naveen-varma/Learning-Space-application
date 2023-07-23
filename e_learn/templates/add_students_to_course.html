@@ -13,7 +13,9 @@
 
         <span class="title"> Add Student to {{ course_details.name }}</span>
         {% if msg %}
-            <br> {{ msg }} <br>
+            <script>
+                alert('{{ msg }}');
+            </script>
         {% endif %}
 
         {% if student_exists %}

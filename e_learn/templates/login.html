@@ -18,5 +18,13 @@
             </button>
         </form>
     </div>
-    <br><br> <a> {{ msg }} </a>
+    <br><br>
+    <div>
+    {% if msg %}
+        <script>
+            alert('{{ msg }}');
+        </script>
+    {% endif %}
+{#     {% include "messages.html" %}#}
+    </div>
 {% endblock %}

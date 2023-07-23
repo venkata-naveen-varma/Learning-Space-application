@@ -31,5 +31,9 @@
             </button>
         </form>
     </div>
-        <br><br> <a> {{ msg }} </a>
+    {% if msg %}
+        <script>
+            alert('{{ msg }}');
+        </script>
+    {% endif %}
 {% endblock %}

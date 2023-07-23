@@ -12,7 +12,9 @@
         </div>
         <span class="title"> Add Instructor to {{ course_details.name }}</span>
         {% if msg %}
-            <br> {{ msg }} <br>
+            <script>
+                alert('{{ msg }}');
+            </script>
         {% endif %}
 
         {% if instructor_exists %}

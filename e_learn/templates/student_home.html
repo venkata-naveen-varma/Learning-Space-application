@@ -57,5 +57,9 @@
         </div>
     {% endif %}
 
-    <br> <br> {{ msg }}
+    {% if msg %}
+        <script>
+            alert('{{ msg }}');
+        </script>
+    {% endif %}
 {% endblock %}
