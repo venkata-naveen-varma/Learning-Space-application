@@ -705,7 +705,7 @@ def download(request):
     """ download lecture notes and assignments, path='download/<notes or assignment id>' """
     notes_id = request.GET.get('notes_id')
     assignment_id = request.GET.get('assignment_id')
-    assignmentgrade_id = request.GEt.get('assignmentgrade_id')
+    assignmentgrade_id = request.GET.get('assignmentgrade_id')
     # download notes file
     if notes_id is not None:
         notes = get_object_or_404(Notes, pk=notes_id)
