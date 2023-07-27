@@ -1023,7 +1023,7 @@ def get_user_assignment_data(user_data, assignment_id):
 
 @login_required(login_url='login')
 def student_course_details(request):
-    """ display course details(notes, assignments, students) for instructor(user), path='instructor/course' with different query parameters
+    """ display course details(notes, assignments, grades) for student(user), path='student/course' with different query parameters
     features: Course details, Instructor, Lectures(notes), Assignments
     """
     send_data = {}
