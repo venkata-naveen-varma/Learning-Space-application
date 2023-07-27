@@ -6,8 +6,15 @@ body{
     padding: 10px;
     justify-content: space-between;
     align-items: center;
-    background-color: #154cff;
+    /*background-color: #154cff;*/
     border-radius: 0px 0px 20px 20px;
+    background: #154CFF;
+    background: -moz-linear-gradient(top, #154CFF 0%, #1298ff 100%);
+    background: -webkit-linear-gradient(top, #154CFF 0%, #1298ff 100%);
+    background: linear-gradient(to bottom, #154CFF 0%, #1298ff 100%);
+
+    -webkit-box-shadow: 3px 2px 7px 1px #000000;
+    box-shadow: 3px 2px 7px 1px #000000;
 }
 .header .title{
     font-size: 30px;
@@ -20,4 +27,20 @@ body{
 }
 .landing-section{
     margin: 10px;
+}
+
+body {
+    margin: 0px;
+    /* Set background image */
+    background-image: url('../assets/book.jpeg');
+
+    /* Set other background properties if needed */
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center center;
+    height: 100vh;
+    width: 100vw;
+    /* Set font and text color */
+    font-family: Arial, sans-serif;
+    color: #ffffff;
 }
