@@ -1,269 +1,215 @@
 {% extends "base_loggedIn.html" %}
 
 {% block body %}
-     {% load static %}
+    {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/table_pages.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}"/>
-    <a href="{% url 'instructor_home' %}">Home</a>
-    <h3> Course: {{ course_details.name }}</h3>
-    <p>Description: {{ course_details.description }}</p>
-    <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&request_students=True">Students</a>
-    <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&request_notes=True">Lectures</a>
-    <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&request_assignments=True">Assignments</a>
-    <br>
-    {# Lecure notes #}
-    {% if requested_notes_create %}
-        <br>
-        <div class="login-page">
-            <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&notes=True" method="POST"
-                  enctype="multipart/form-data"> {% csrf_token %}
-                <span class="title">New Lecture Notes</span>
-                <label> Lecture Name </label>
-                <input type="text" name="notes_name" placeholder="Enter Lecture name" required/> <br> <br>
-                <label> Lecture Document </label>
-                <input type="file" name="notes_doc" placeholder="Select a PDF"/> <br> <br>
-                <button type="submit">Create Notes</button>
-            </form>
-        </div>
-    {% endif %}
 
-    {% if requested_update_notes %}
-        <br>
-        <div class="login-page">
-            <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&notes=True&update=True&notes_id={{ notes_details.id }}"
-                  method="POST" enctype="multipart/form-data"> {% csrf_token %}
-                <span class="title">Update Lecture</span>
-                <label> Lecture Name </label>
-                <input type="text" name="notes_name" placeholder="Enter Lecture name" value="{{ notes_details.name }}"
-                       required/> <br> <br>
-                <label> Lecture Document </label>
-                <input type="file" name="notes_doc" placeholder="Select a PDF" value="{{ notes_details.notes_doc }}"/> <br>
-                <br>
-                <button type="submit">Update Notes</button>
-            </form>
+    <div class="course-list-page">
+        <div class="course-list-header">
+            <a href="{% url 'instructor_home' %}">Home</a>
         </div>
-    {% endif %}
-
-    {% if requested_notes %}
+        <h3> Course: {{ course_details.name }}</h3>
+        <p>Description: {{ course_details.description }}</p>
+        <div class="course-list-header">
+            <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&request_students=True">Students</a>
+            <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&request_notes=True">Lectures</a>
+            <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&request_assignments=True">Assignments</a>
+        </div>
         <br>
-        <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&request_notes_create=True">Add
-            New Lecture</a>
-        {% if notes_list %}
+        {# Lecure notes #}
+        {% if requested_notes_create %}
             <br>
-            <div class="course-list-page">
-                <span class="title">Lectures</span>
-                <table>
-                    <thead>
-                    <tr>
-                        <th scope="col" style="border: 1px solid black;">Lecture Name</th>
-                        <th scope="col" style="border: 1px solid black;">Lecture Document</th>
-                        <th scope="col" style="border: 1px solid black;">Created On</th>
-                        {#                        <th scope="col" style="border: 1px solid black;">Notes Files</th>#}
-                        <th scope="col" style="border: 1px solid black;">Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for notes in notes_list %}
+            <div class="login-page">
+                <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&notes=True"
+                      method="POST"
+                      enctype="multipart/form-data"> {% csrf_token %}
+                    <span class="title">New Lecture Notes</span>
+                    <label> Lecture Name </label>
+                    <input type="text" name="notes_name" placeholder="Enter Lecture name" required/> <br> <br>
+                    <label> Lecture Document </label>
+                    <input type="file" name="notes_doc" placeholder="Select a PDF"/> <br> <br>
+                    <button type="submit">Create Notes</button>
+                </form>
+            </div>
+        {% endif %}
+
+        {% if requested_update_notes %}
+            <br>
+            <div class="login-page">
+                <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&notes=True&update=True&notes_id={{ notes_details.id }}"
+                      method="POST" enctype="multipart/form-data"> {% csrf_token %}
+                    <span class="title">Update Lecture</span>
+                    <label> Lecture Name </label>
+                    <input type="text" name="notes_name" placeholder="Enter Lecture name"
+                           value="{{ notes_details.name }}"
+                           required/> <br> <br>
+                    <label> Lecture Document </label>
+                    <input type="file" name="notes_doc" placeholder="Select a PDF"
+                           value="{{ notes_details.notes_doc }}"/> <br>
+                    <br>
+                    <button type="submit">Update Notes</button>
+                </form>
+            </div>
+        {% endif %}
+
+        {% if requested_notes %}
+            <br>
+            <div class="styled_a">
+                <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&request_notes_create=True">Add
+                    New Lecture</a>
+            </div>
+            {% if notes_list %}
+                <br>
+                <div class="course-list-page">
+                    <span class="title">Lectures</span>
+                    <table class="table-class">
+                        <thead>
                         <tr>
-                            <td style="border: 1px solid black; padding: 5px" align="center"> {{ notes.name }} </td>
-                            <td style="border: 1px solid black; padding: 5px" align="center">
-                                <a href="{% url 'download' %}?notes_id={{ notes.id }}"> {{ notes.notes_doc.name }} </a>
-                            </td>
-                            <td style="border: 1px solid black; padding: 5px" align="center"> {{ notes.created_on }}
-                            </td>
-                            <td style="border: 1px solid black; padding: 5px" align="center">
-                                <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&notes_id={{ notes.id }}&request_update_notes=True">
+                            <th scope="col" style="border: 1px solid black;">Lecture Name</th>
+                            <th scope="col" style="border: 1px solid black;">Lecture Document</th>
+                            <th scope="col" style="border: 1px solid black;">Created On</th>
+                            {#                        <th scope="col" style="border: 1px solid black;">Notes Files</th>#}
+                            <th scope="col" style="border: 1px solid black;">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for notes in notes_list %}
+                            <tr>
+                                <td style="border: 1px solid black; padding: 5px" align="center"> {{ notes.name }} </td>
+                                <td style="border: 1px solid black; padding: 5px" align="center">
+                                    <a href="{% url 'download' %}?notes_id={{ notes.id }}"> {{ notes.notes_doc.name }} </a>
+                                </td>
+                                <td style="border: 1px solid black; padding: 5px" align="center"> {{ notes.created_on }}
+                                </td>
+                                <td style="border: 1px solid black; padding: 5px" align="center">
+                                    <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&notes_id={{ notes.id }}&request_update_notes=True">
+                                        Update </a>
+                                    &nbsp;<a
+                                        href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&notes_id={{ notes.id }}&remove_notes=True">
+                                    Remove </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        {% endif %}
+
+        {# Assignments #}
+        {% if requested_assignments %}
+            <br>
+            <div class="styled_a">
+                <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&request_assignment_create=True">Add
+                    New Assignment</a>
+            </div>
+            {% if assignment_list %}
+                <br>
+                <div class="course-list-page">
+                    <span class="title">Assignments</span>
+                    <table class="table-class">
+                        <thead>
+                        <tr>
+                            <th scope="col" style="border: 1px solid black;">Assignment Name</th>
+                            <th scope="col" style="border: 1px solid black;">Assignment Document</th>
+                            <th scope="col" style="border: 1px solid black;">Assignment Deadline</th>
+                            <th scope="col" style="border: 1px solid black;">Created On</th>
+                            <th scope="col" style="border: 1px solid black;">Grade Points</th>
+                            <th scope="col" style="border: 1px solid black;">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for assignment in assignment_list %}
+                            <tr>
+                                <td style="border: 1px solid black; padding: 5px"
+                                    align="center"> {{ assignment.name }} </td>
+                                <td style="border: 1px solid black; padding: 5px" align="center">
+                                    <a href="{% url 'download' %}?assignment_id={{ assignment.id }}"> {{ assignment.assignment_doc.name }} </a>
+                                </td>
+                                <td style="border: 1px solid black; padding: 5px"
+                                    align="center"> {{ assignment.deadline }} </td>
+                                <td style="border: 1px solid black; padding: 5px"
+                                    align="center"> {{ assignment.created_on }} </td>
+                                <td style="border: 1px solid black; padding: 5px"
+                                    align="center"> {{ assignment.grade_points }} </td>
+                                <td style="border: 1px solid black; padding: 5px" align="center">
+                                    <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment.id }}&request_grades=True">
+                                        Submissions </a>
+                                    &nbsp<a
+                                        href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment.id }}&request_update_assignment=True">
                                     Update </a>
-                                &nbsp;<a
-                                    href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&notes_id={{ notes.id }}&remove_notes=True">
-                                Remove </a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                                    &nbsp;<a
+                                        href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment.id }}&remove_assignment=True">
+                                    Remove </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
         {% endif %}
-    {% endif %}
 
-    {# Assignments #}
-    {% if requested_assignments %}
-        <br>
-        <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&request_assignment_create=True">Add
-            New Assignment</a>
-        {% if assignment_list %}
+        {% if requested_assignment_create %}
             <br>
-            <div class="course-list-page">
-                <span class="title">Assignments</span>
-                <table>
-                    <thead>
-                    <tr>
-                        <th scope="col" style="border: 1px solid black;">Assignment Name</th>
-                        <th scope="col" style="border: 1px solid black;">Assignment Document</th>
-                        <th scope="col" style="border: 1px solid black;">Assignment Deadline</th>
-                        <th scope="col" style="border: 1px solid black;">Created On</th>
-                        <th scope="col" style="border: 1px solid black;">Grade Points</th>
-                        <th scope="col" style="border: 1px solid black;">Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for assignment in assignment_list %}
-                        <tr>
-                            <td style="border: 1px solid black; padding: 5px" align="center"> {{ assignment.name }} </td>
-                            <td style="border: 1px solid black; padding: 5px" align="center">
-                                <a href="{% url 'download' %}?assignment_id={{ assignment.id }}"> {{ assignment.assignment_doc.name }} </a>
-                            </td>
-                            <td style="border: 1px solid black; padding: 5px"
-                                align="center"> {{ assignment.deadline }} </td>
-                            <td style="border: 1px solid black; padding: 5px"
-                                align="center"> {{ assignment.created_on }} </td>
-                            <td style="border: 1px solid black; padding: 5px"
-                                align="center"> {{ assignment.grade_points }} </td>
-                            <td style="border: 1px solid black; padding: 5px" align="center">
-                                <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment.id }}&request_grades=True">
-                                    Submissions </a>
-                                &nbsp<a
-                                    href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment.id }}&request_update_assignment=True">
-                                Update </a>
-                                &nbsp;<a
-                                    href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment.id }}&remove_assignment=True">
-                                Remove </a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+            <div class="login-page">
+                <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment=True"
+                      method="POST" enctype="multipart/form-data"> {% csrf_token %}
+                    <span class="title">New Assignment</span>
+                    <label> Assignment Name </label>
+                    <input type="text" name="assignment_name" placeholder="Enter Assignment name" required/> <br> <br>
+                    <label> Assignment Document </label>
+                    <input type="file" name="assignment_doc" placeholder="Select a PDF" required/> <br> <br>
+                    <label> Assignment Deadline </label>
+                    <input type="datetime-local" name="assignment_deadline" placeholder="Assignment Deadline" required/>
+                    <br>
+                    <br>
+                    <label> Assignment Grade Points </label>
+                    <input type="number" name="assignment_gradepoints" placeholder="Assignment Grade Points" required/>
+                    <br>
+                    <br>
+                    <button type="submit">Create Assignment</button>
+                </form>
             </div>
         {% endif %}
-    {% endif %}
 
-    {% if requested_assignment_create %}
-        <br>
-        <div class="login-page">
-            <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment=True"
-                  method="POST" enctype="multipart/form-data"> {% csrf_token %}
-                <span class="title">New Assignment</span>
-                <label> Assignment Name </label>
-                <input type="text" name="assignment_name" placeholder="Enter Assignment name" required/> <br> <br>
-                <label> Assignment Document </label>
-                <input type="file" name="assignment_doc" placeholder="Select a PDF" required/> <br> <br>
-                <label> Assignment Deadline </label>
-                <input type="datetime-local" name="assignment_deadline" placeholder="Assignment Deadline" required/> <br>
-                <br>
-                <label> Assignment Grade Points </label>
-                <input type="number" name="assignment_gradepoints" placeholder="Assignment Grade Points" required/> <br>
-                <br>
-                <button type="submit">Create Assignment</button>
-            </form>
-        </div>
-    {% endif %}
+        {% if requested_update_assignment %}
+            <br>
+            <div class="login-page">
+                <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment=True&update=True&assignment_id={{ assignment_details.id }}"
+                      method="POST" enctype="multipart/form-data"> {% csrf_token %}
+                    <span class="title">Update Assignment</span>
+                    <label> Assignment Name </label>
+                    <input type="text" name="assignment_name" placeholder="Enter assignment name"
+                           value="{{ assignment_details.name }}" required/> <br> <br>
+                    <label> Assignment Document </label>
+                    <input type="file" name="assignment_doc" placeholder="Select a PDF"/> <br> <br>
+                    <label> Assignment Deadline </label>
+                    <input type="datetime-local" name="assignment_deadline" value="{{ deadline }}"/> <br> <br>
+                    <label> Assignment Grade Points </label>
+                    <input type="number" name="assignment_gradepoints" placeholder="Assignment Grade Points"
+                           value="{{ assignment_details.grade_points }}" required/> <br> <br>
+                    <button type="submit">Update Assignment</button>
+                </form>
+            </div>
+        {% endif %}
 
-    {% if requested_update_assignment %}
-        <br>
-        <div class="login-page">
-            <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment=True&update=True&assignment_id={{ assignment_details.id }}"
-                  method="POST" enctype="multipart/form-data"> {% csrf_token %}
-                <span class="title">Update Assignment</span>
-                <label> Assignment Name </label>
-                <input type="text" name="assignment_name" placeholder="Enter assignment name"
-                       value="{{ assignment_details.name }}" required/> <br> <br>
-                <label> Assignment Document </label>
-                <input type="file" name="assignment_doc" placeholder="Select a PDF"/> <br> <br>
-                <label> Assignment Deadline </label>
-                <input type="datetime-local" name="assignment_deadline" value="{{ deadline }}"/> <br> <br>
-                <label> Assignment Grade Points </label>
-                <input type="number" name="assignment_gradepoints" placeholder="Assignment Grade Points"
-                       value="{{ assignment_details.grade_points }}" required/> <br> <br>
-                <button type="submit">Update Assignment</button>
-            </form>
-        </div>
-    {% endif %}
-
-    {# Grades #}
-    {% if requested_grades %}
-        <h4> Assignment - {{ assignment_details.name }} </h4>
-        <div class="course-list-page">
-            <span class="title">Submissions</span>
-            <table>
-                <thead>
-                <tr>
-                    <th scope="col" style="border: 1px solid black;"> Student ID</th>
-                    <th scope="col" style="border: 1px solid black;"> First Name</th>
-                    <th scope="col" style="border: 1px solid black;"> Last Name</th>
-                    <th scope="col" style="border: 1px solid black;"> Email</th>
-                    <th scope="col" style="border: 1px solid black;"> Status</th>
-                    <th scope="col" style="border: 1px solid black;"> Document</th>
-                    <th scope="col" style="border: 1px solid black;"> Grade</th>
-                    <th scope="col" style="border: 1px solid black;"> Action</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for student_record in students_lst %}
-                    <tr>
-                        <td style="border: 1px solid black;padding: 5px" align="center">{{ student_record.user.id }}</td>
-                        <td style="border: 1px solid black;padding: 5px"
-                            align="center">{{ student_record.user.first_name }}</td>
-                        <td style="border: 1px solid black;padding: 5px"
-                            align="center">{{ student_record.user.last_name }}</td>
-                        <td style="border: 1px solid black;padding: 5px" align="center">{{ student_record.user.email }}</td>
-                        {% if student_record.submitted_status == 1 %}
-                            <td style="border: 1px solid black; padding: 5px" align="center"> Submitted</td>
-                        {% else %}
-                            <td style="border: 1px solid black; padding: 5px" align="center"> Not Submitted</td>
-                        {% endif %}
-                        <td style="border: 1px solid black; padding: 5px" align="center">
-                            <a href="{% url 'download' %}?assignment_id={{ assignment.id }}"> {{ student_record.assignment_doc.name }} </a>
-                        </td>
-                        <td style="border: 1px solid black;padding: 5px" align="center">
-                            {% if requested_grade_update %}
-                                <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&grade=True&assignment_id={{ assignment_details.id }}&student_record={{ student_record.id }}"
-                                      method="POST"> {% csrf_token %}
-                                    {% if student_record.grade is None %}
-                                        <input type="text" name="grade" placeholder="{{ student_record.grade }}" required>/
-                                        {{ assignment_details.grade_points }}
-                                    {% else %}
-                                        <input type="text" name="grade" value="{{ student_record.grade }}" required>/
-                                        {{ assignment_details.grade_points }}
-                                    {% endif %}
-                                    <input type="submit" value="Save">
-                                </form>
-                            {% else %}
-                                <form>
-                                    <input type="text" name="grade" value="{{ student_record.grade }}"
-                                           readonly>/{{ assignment_details.grade_points }}
-                                </form>
-                            {% endif %}
-                        </td>
-                        {% if requested_grade_update %}
-                            <td style="border: 1px solid black; padding: 5px" align="center">
-                                Update the grade and click 'Save'
-                            </td>
-                        {% else %}
-                            <td style="border: 1px solid black; padding: 5px" align="center">
-                                <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment_details.id }}&request_update_grade=True">
-                                    Update Grade </a>
-                            </td>
-                        {% endif %}
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% endif %}
-
-    {# Students #}
-    {% if requested_students %}
-        {% if students_exists %}
+        {# Grades #}
+        {% if requested_grades %}
+            <h4> Assignment - {{ assignment_details.name }} </h4>
             <div class="course-list-page">
-                <span class="title">Students</span>
-                <table>
+                <span class="title">Submissions</span>
+                <table class="table-class">
                     <thead>
                     <tr>
                         <th scope="col" style="border: 1px solid black;"> Student ID</th>
                         <th scope="col" style="border: 1px solid black;"> First Name</th>
                         <th scope="col" style="border: 1px solid black;"> Last Name</th>
                         <th scope="col" style="border: 1px solid black;"> Email</th>
-                        <th scope="col" style="border: 1px solid black;"> Total Grade</th>
+                        <th scope="col" style="border: 1px solid black;"> Status</th>
+                        <th scope="col" style="border: 1px solid black;"> Document</th>
+                        <th scope="col" style="border: 1px solid black;"> Grade</th>
                         <th scope="col" style="border: 1px solid black;"> Action</th>
                     </tr>
                     </thead>
@@ -278,32 +224,43 @@
                                 align="center">{{ student_record.user.last_name }}</td>
                             <td style="border: 1px solid black;padding: 5px"
                                 align="center">{{ student_record.user.email }}</td>
+                            {% if student_record.submitted_status == 1 %}
+                                <td style="border: 1px solid black; padding: 5px" align="center"> Submitted</td>
+                            {% else %}
+                                <td style="border: 1px solid black; padding: 5px" align="center"> Not Submitted</td>
+                            {% endif %}
+                            <td style="border: 1px solid black; padding: 5px" align="center">
+                                <a href="{% url 'download' %}?assignment_id={{ assignment.id }}"> {{ student_record.assignment_doc.name }} </a>
+                            </td>
                             <td style="border: 1px solid black;padding: 5px" align="center">
-                                {% if requested_final_grade_update %}
-                                    <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&final_grade=True&assignment_id={{ assignment_details.id }}&student_record={{ student_record.id }}"
+                                {% if requested_grade_update %}
+                                    <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&grade=True&assignment_id={{ assignment_details.id }}&student_record={{ student_record.id }}"
                                           method="POST"> {% csrf_token %}
-                                        {% if student_record.final_grade is None %}
-                                            <input type="text" name="grade" placeholder="{{ student_record.final_grade }}"
-                                                   required>
+                                        {% if student_record.grade is None %}
+                                            <input type="text" name="grade" placeholder="{{ student_record.grade }}"
+                                                   required>/
+                                            {{ assignment_details.grade_points }}
                                         {% else %}
-                                            <input type="text" name="grade" value="{{ student_record.final_grade }}"
-                                                   required>
+                                            <input type="text" name="grade" value="{{ student_record.grade }}" required>
+                                            /
+                                            {{ assignment_details.grade_points }}
                                         {% endif %}
                                         <input type="submit" value="Save">
                                     </form>
                                 {% else %}
                                     <form>
-                                        <input type="text" name="grade" value="{{ student_record.final_grade }}" readonly>
+                                        <input type="text" name="grade" value="{{ student_record.grade }}"
+                                               readonly>/{{ assignment_details.grade_points }}
                                     </form>
                                 {% endif %}
                             </td>
-                            {% if requested_final_grade_update %}
+                            {% if requested_grade_update %}
                                 <td style="border: 1px solid black; padding: 5px" align="center">
                                     Update the grade and click 'Save'
                                 </td>
                             {% else %}
                                 <td style="border: 1px solid black; padding: 5px" align="center">
-                                    <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment_details.id }}&request_update_final_grade=True">
+                                    <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment_details.id }}&request_update_grade=True">
                                         Update Grade </a>
                                 </td>
                             {% endif %}
@@ -312,14 +269,79 @@
                     </tbody>
                 </table>
             </div>
-        {% else %}
-            <br> This course does not have any students enrolled yet. <br>
         {% endif %}
-    {% endif %}
 
-    {% if msg %}
-        <script>
-            alert('{{ msg }}');
-        </script>
-    {% endif %}
+        {# Students #}
+        {% if requested_students %}
+            {% if students_exists %}
+                <div class="course-list-page">
+                    <span class="title">Students</span>
+                    <table class="table-class">
+                        <thead>
+                        <tr>
+                            <th scope="col" style="border: 1px solid black;"> Student ID</th>
+                            <th scope="col" style="border: 1px solid black;"> First Name</th>
+                            <th scope="col" style="border: 1px solid black;"> Last Name</th>
+                            <th scope="col" style="border: 1px solid black;"> Email</th>
+                            <th scope="col" style="border: 1px solid black;"> Total Grade</th>
+                            <th scope="col" style="border: 1px solid black;"> Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for student_record in students_lst %}
+                            <tr>
+                                <td style="border: 1px solid black;padding: 5px"
+                                    align="center">{{ student_record.user.id }}</td>
+                                <td style="border: 1px solid black;padding: 5px"
+                                    align="center">{{ student_record.user.first_name }}</td>
+                                <td style="border: 1px solid black;padding: 5px"
+                                    align="center">{{ student_record.user.last_name }}</td>
+                                <td style="border: 1px solid black;padding: 5px"
+                                    align="center">{{ student_record.user.email }}</td>
+                                <td style="border: 1px solid black;padding: 5px" align="center">
+                                    {% if requested_final_grade_update %}
+                                        <form action="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&final_grade=True&assignment_id={{ assignment_details.id }}&student_record={{ student_record.id }}"
+                                              method="POST"> {% csrf_token %}
+                                            {% if student_record.final_grade is None %}
+                                                <input type="text" name="grade"
+                                                       placeholder="{{ student_record.final_grade }}"
+                                                       required>
+                                            {% else %}
+                                                <input type="text" name="grade" value="{{ student_record.final_grade }}"
+                                                       required>
+                                            {% endif %}
+                                            <input type="submit" value="Save">
+                                        </form>
+                                    {% else %}
+                                        <form>
+                                            <input type="text" name="grade" value="{{ student_record.final_grade }}"
+                                                   readonly>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                                {% if requested_final_grade_update %}
+                                    <td style="border: 1px solid black; padding: 5px" align="center">
+                                        Update the grade and click 'Save'
+                                    </td>
+                                {% else %}
+                                    <td style="border: 1px solid black; padding: 5px" align="center">
+                                        <a href="{% url 'instructor_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment_details.id }}&request_update_final_grade=True">
+                                            Update Grade </a>
+                                    </td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <br> This course does not have any students enrolled yet. <br>
+            {% endif %}
+        {% endif %}
+
+        {% if msg %}
+            <script>
+                alert('{{ msg }}');
+            </script>
+        {% endif %}
 {% endblock %}

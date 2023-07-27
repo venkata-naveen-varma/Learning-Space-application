@@ -19,12 +19,17 @@
 .institution-page .content{
     display: flex;
     flex-direction: row;
+    justify-content: space-between;
 }
 .institution-page .content a{
     display: flex;
     align-items: center;
     flex-direction: column;
     margin: 10px;
+
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter:blur(4px);
+    border-radius: 10px;
 
     text-decoration: none;
     padding: 5px;
@@ -34,6 +39,11 @@
     box-shadow: 7px 7px 11px 0px rgba(0, 0, 0, 0.75);
     -webkit-box-shadow: 7px 7px 11px 0px rgba(0, 0, 0, 0.75);
     -moz-box-shadow: 7px 7px 11px 0px rgba(0, 0, 0, 0.75);
+
+    transition: all .2s ease-in-out;
+}
+.institution-page .content a:hover{
+    transform: scale(1.07);
 }
 .institution-page .content a span{
     margin-top: 20px;

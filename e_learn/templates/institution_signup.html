@@ -6,24 +6,29 @@
     <div class="login-page">
         <form action="{% url 'payment' %}" method="POST"> {% csrf_token %}
             <span class="title">Institution Signup</span>
-            <label> Name </label>
+            <br>
+            {#            <label> Name </label>#}
             <input type="text" name="name" placeholder="Enter Institution name" required/> <br> <br>
-            <label> Email/Username: </label>
+            {#            <label> Email/Username: </label>#}
             <input type="email" name="email" placeholder="Enter your email" required/> <br> <br>
-            <label> Password: </label>
+            {#            <label> Password: </label>#}
             <input type="password" name="password1" placeholder="Enter your password" required/> <br> <br>
-            <label> Re-type Password: </label>
+            {#            <label> Re-type Password: </label>#}
             <input type="password" name="password2" placeholder="Re-type your password" required/> <br> <br>
-            <label for="plan" name="plan">Choose a subscription plan:</label>
-            <select id="plan" name="plan">
-                <option value="basic">Basic</option>
-                <option value="premium">Premium</option>
-            </select> <br> <br>
-            <label for="currency" name="currency">Choose a Currency to Pay:</label>
-            <select id="currency" name="currency">
-                <option value="CAD">CAD</option>
-                <option value="USD">USD</option>
-            </select> <br> <br>
+            <div class="row">
+                <label for="plan" name="plan">Choose a subscription plan:</label>
+                <select id="plan" name="plan">
+                    <option value="basic">Basic</option>
+                    <option value="premium">Premium</option>
+                </select> <br> <br>
+            </div>
+            <div class="row">
+                <label for="currency" name="currency">Choose a currency to pay    :</label>
+                <select id="currency" name="currency">
+                    <option value="CAD">CAD</option>
+                    <option value="USD">USD</option>
+                </select> <br> <br>
+            </div>
             <button type="submit">Continue</button>
 
             <button type="button">

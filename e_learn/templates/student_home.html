@@ -4,65 +4,83 @@
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/profile.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'css/table_pages.css' %}"/>
-    <a href="{% url 'student_home' %}">Home</a>
-    <h1>Student Home</h1>
-    <a href="{% url 'student_home' %}?request_profile=True">Profile</a>
-    {% if course_exist %}
-        <div class="course-list-page">
-            <span class="title">Courses</span>
-        <table>
-            <thead>
-                <tr>
-                    <th scope="col" style="border: 1px solid black;">Course ID</th>
-                    <th scope="col" style="border: 1px solid black;">Course Name</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for course in course_list %}
+    <div class="course-list-page">
+        <div class="course-list-header">
+            <a href="{% url 'student_home' %}">Home</a>
+        </div>
+        <h1>Student Home</h1>
+        <div class="course-list-header">
+            <a href="{% url 'student_home' %}?request_profile=True">Profile</a>
+        </div>
+        {% if course_exist %}
+            <div class="course-list-page">
+                <span class="title">Courses</span>
+                <table class="table-class">
+                    <thead>
                     <tr>
-                        <td style="border: 1px solid black; padding: 5px" align="center">{{ course.id }}</td>
-                        <td style="border: 1px solid black; padding: 5px" align="center"><a href="{% url 'student_course_details' %}?course_id={{ course.id }}"> {{ course.name }} </a></td>
+                        <th scope="col" style="border: 1px solid black;">Course ID</th>
+                        <th scope="col" style="border: 1px solid black;">Course Name</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                    </thead>
+                    <tbody>
+                    {% for course in course_list %}
+                        <tr>
+                            <td style="border: 1px solid black; padding: 5px" align="center">{{ course.id }}</td>
+                            <td style="border: 1px solid black; padding: 5px" align="center"><a
+                                    href="{% url 'student_course_details' %}?course_id={{ course.id }}"> {{ course.name }} </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+        <div class="profile">
+            <div>
+                {% if requested_profile %}
+                    <div class="profile-header">
+                        <h3> Details </h3>
+                        <div class="profile-title">
+                            <a href="{% url 'student_home' %}?req_update_profile=True">Update Profile</a>
+                        </div>
+                    </div>
+                    <div class="grid-container">
+                        <div class="grid-item">ID: {{ user_details.id }}</div>
+                        <div class="grid-item">First Name: {{ user_details.first_name }}</div>
+                        <div class="grid-item">Last Name: {{ user_details.last_name }}</div>
+                        <div class="grid-item">Email: {{ user_details.email }}</div>
+                    </div>
+                {% endif %}
+            </div>
+            <div>
+                {% if req_update_profile %}
+                    <br>
+                    <div class="grid-container">
+                        <form action="{% url 'student_home' %}" method="POST"> {% csrf_token %}
+                            <div class="grid-item">
+                                <label> First Name </label>
+                                <input type="text" name="first_name" value="{{ user_details.first_name }}" required/>
+                            </div>
+                            <div class="grid-item">
+                                <label> Last Name </label>
+                                <input type="text" name="last_name" value="{{ user_details.last_name }}" required/>
+                            </div>
+                            <div class="grid-item">
+                                <label> Password </label>
+                                <input type="password" name="password" placeholder="Enter new password"
+                                       value="{{ user_details.password }}"/>
+                            </div>
+                            <br><br>
+                            <button type="submit">Update</button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
         </div>
-    {% endif %}
 
-    {% if requested_profile %}
-        <a href="{% url 'student_home' %}?req_update_profile=True">Update Profile</a>
-        <h3> Details </h3>
-        <div class="grid-container">
-            <div class="grid-item">ID: {{ user_details.id }}</div>
-            <div class="grid-item">First Name: {{ user_details.first_name }}</div>
-            <div class="grid-item">Last Name: {{ user_details.last_name }}</div>
-            <div class="grid-item">Email: {{ user_details.email }}</div>
-        </div>
-    {% endif %}
-    {% if req_update_profile %}
-        <br>
-        <div class="grid-container">
-            <form action="{% url 'student_home' %}" method="POST"> {% csrf_token %}
-                 <div class="grid-item">
-                    <label> First Name </label>
-                    <input type="text" name="first_name" value="{{ user_details.first_name }}" required/>
-                 </div>
-                <div class="grid-item">
-                    <label> Last Name </label>
-                    <input type="text" name="last_name" value="{{ user_details.last_name }}" required/>
-                </div>
-                <div class="grid-item">
-                    <label> Password </label>
-                    <input type="password" name="password" placeholder="Enter new password" value="{{ user_details.password }}"/>
-                </div>
-                <br><br><button type="submit">Update</button>
-            </form>
-        </div>
-    {% endif %}
-
-    {% if msg %}
-        <script>
-            alert('{{ msg }}');
-        </script>
-    {% endif %}
+        {% if msg %}
+            <script>
+                alert('{{ msg }}');
+            </script>
+        {% endif %}
 {% endblock %}

@@ -1,116 +1,133 @@
 {% extends "base_loggedIn.html" %}
 
 {% block body %}
-     {% load static %}
+    {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/table_pages.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}"/>
-    <a href="{% url 'student_home' %}">Home</a>
-    <h3> Course: {{ course_details.name }}</h3>
-    <p>Description: {{ course_details.description }}</p>
-    {% if final_grade is not None %}
-        <p>Total Grade: {{ final_grade }}</p>
-    {% else %}
-        <p>Total Grade: Not yet evaluated </p>
-    {% endif %}
-    <a href="{% url 'student_course_details' %}?course_id={{ course_details.id }}&request_notes=True">Lectures</a>
-    <a href="{% url 'student_course_details' %}?course_id={{ course_details.id }}&request_assignments=True">Assignments</a>
-    <br>
-
-    {# Lecure notes #}
-    {% if requested_notes %}
-        {% if notes_list %}
-            <br>
-            <div class="course-list-page">
-                <span class="title">Lectures</span>
-            <table>
-                <thead>
-                <tr>
-                    <th scope="col" style="border: 1px solid black;">Lecture Name</th>
-                    <th scope="col" style="border: 1px solid black;">Lecture Document</th>
-                    <th scope="col" style="border: 1px solid black;">Created On</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for notes in notes_list %}
-                    <tr>
-                        <td style="border: 1px solid black; padding: 5px" align="center"> {{ notes.name }} </td>
-                        <td style="border: 1px solid black; padding: 5px" align="center">
-                            <a href="{% url 'download' %}?notes_id={{ notes.id }}"> {{ notes.notes_doc.name }} </a>
-                        </td>
-                        <td style="border: 1px solid black; padding: 5px" align="center"> {{ notes.created_on }} </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-            </div>
-        {% endif %}
-    {% endif %}
-
-    {# Assignments #}
-    {% if requested_assignments %}
-        {% if assignment_list %}
-            <br>
-            <div class="course-list-page">
-                <span class="title">Assignments</span>
-            <table>
-                <thead>
-                <tr>
-                    <th scope="col" style="border: 1px solid black;">Assignment Name</th>
-                    <th scope="col" style="border: 1px solid black;">Assignment Document</th>
-                    <th scope="col" style="border: 1px solid black;">Assignment Deadline</th>
-                    <th scope="col" style="border: 1px solid black;">Created On</th>
-                    <th scope="col" style="border: 1px solid black;">Status</th>
-                    <th scope="col" style="border: 1px solid black;">Grades</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for assignment in assignment_list %}
-                    <tr>
-                        <td style="border: 1px solid black; padding: 5px" align="center"><a
-                                href="{% url 'student_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment.id }}&req_specific_assignment=True"> {{ assignment.name }} </a>
-                        </td>
-                        <td style="border: 1px solid black; padding: 5px" align="center">
-                            <a href="{% url 'download' %}?assignment_id={{ assignment.id }}"> {{ assignment.assignment_doc.name }} </a>
-                        </td>
-                        <td style="border: 1px solid black; padding: 5px"
-                            align="center"> {{ assignment.deadline }} </td>
-                        <td style="border: 1px solid black; padding: 5px"
-                            align="center"> {{ assignment.created_on }} </td>
-                        {% if assignment.status == 1 %}
-                            <td style="border: 1px solid black; padding: 5px" align="center"> Submitted</td>
-                        {% else %}
-                            <td style="border: 1px solid black; padding: 5px" align="center"> Not Submitted</td>
-                        {% endif %}
-                        <td style="border: 1px solid black; padding: 5px"
-                            align="center"> {{ assignment.grade }}/{{ assignment.grade_points }} </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-            </div>
-        {% endif %}
-    {% endif %}
-
-    {% if req_specific_assignment %}
-        <h3> Assignment - {{ assignment_data.name }} </h3>
-        <h4> Document: <a
-                href="{% url 'download' %}?assignment_id={{ assignment_data.id }}"> {{ assignment_data.assignment_doc.name }} </a>
-        </h4>
-        <h4> Grade Obtained: {{ assignment_data.assignmentgrades.grade }}/{{ assignment_data.grade_points }}</h4>
-        {% if assignment_data.assignmentgrades.submitted_status == 1 %}
-            <h4> Status: Submitted </h4>
-            <h4> Submitted Document: <a
-                    href="{% url 'download' %}?assignmentgrade_id={{ assignment_data.assignmentgrades.id }}"> {{ assignment_data.assignmentgrades.assignment_doc.name }} </a>
-            </h4>
+    <div class="course-list-page">
+        <div class="course-list-header">
+            <a href="{% url 'student_home' %}">Home</a>
+        </div>
+        <h3> Course: {{ course_details.name }}</h3>
+        <p>Description: {{ course_details.description }}</p>
+        {% if final_grade is not None %}
+            <p>Total Grade: {{ final_grade }}</p>
         {% else %}
-            <h4> Status: Not Submitted </h4>
+            <p>Total Grade: Not yet evaluated </p>
         {% endif %}
-        <form action="{% url 'student_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment_data.id }}&assignmentgrade_id={{ assignment_data.assignmentgrades.id }}&upload_doc=True"
-              method="POST" enctype="multipart/form-data"> {% csrf_token %}
-            <input type="file" name="assignment_doc" placeholder="Select a PDF" required/>
-            <button type="submit">Submit Assignment</button>
-        </form>
-    {% endif %}
+        <div class="course-list-header">
+            <a href="{% url 'student_course_details' %}?course_id={{ course_details.id }}&request_notes=True">Lectures</a>
+            <a href="{% url 'student_course_details' %}?course_id={{ course_details.id }}&request_assignments=True">Assignments</a>
+        </div>
+        <br>
+
+        {# Lecure notes #}
+        {% if requested_notes %}
+            {% if notes_list %}
+                <br>
+                <div class="course-list-page">
+                    <span class="title">Lectures</span>
+                    <table class="table-class">
+                        <thead>
+                        <tr>
+                            <th scope="col" style="border: 1px solid black;">Lecture Name</th>
+                            <th scope="col" style="border: 1px solid black;">Lecture Document</th>
+                            <th scope="col" style="border: 1px solid black;">Created On</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for notes in notes_list %}
+                            <tr>
+                                <td style="border: 1px solid black; padding: 5px" align="center"> {{ notes.name }} </td>
+                                <td style="border: 1px solid black; padding: 5px" align="center">
+                                    <a href="{% url 'download' %}?notes_id={{ notes.id }}"> {{ notes.notes_doc.name }} </a>
+                                </td>
+                                <td style="border: 1px solid black; padding: 5px"
+                                    align="center"> {{ notes.created_on }} </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        {% endif %}
+
+        {# Assignments #}
+        {% if requested_assignments %}
+            {% if assignment_list %}
+                <br>
+                <div class="course-list-page">
+                    <span class="title">Assignments</span>
+                    <table class="table-class">
+                        <thead>
+                        <tr>
+                            <th scope="col" style="border: 1px solid black;">Assignment Name</th>
+                            <th scope="col" style="border: 1px solid black;">Assignment Document</th>
+                            <th scope="col" style="border: 1px solid black;">Assignment Deadline</th>
+                            <th scope="col" style="border: 1px solid black;">Created On</th>
+                            <th scope="col" style="border: 1px solid black;">Status</th>
+                            <th scope="col" style="border: 1px solid black;">Grades</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for assignment in assignment_list %}
+                            <tr>
+                                <td style="border: 1px solid black; padding: 5px" align="center"><a
+                                        href="{% url 'student_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment.id }}&req_specific_assignment=True"> {{ assignment.name }} </a>
+                                </td>
+                                <td style="border: 1px solid black; padding: 5px" align="center">
+                                    <a href="{% url 'download' %}?assignment_id={{ assignment.id }}"> {{ assignment.assignment_doc.name }} </a>
+                                </td>
+                                <td style="border: 1px solid black; padding: 5px"
+                                    align="center"> {{ assignment.deadline }} </td>
+                                <td style="border: 1px solid black; padding: 5px"
+                                    align="center"> {{ assignment.created_on }} </td>
+                                {% if assignment.status == 1 %}
+                                    <td style="border: 1px solid black; padding: 5px" align="center"> Submitted</td>
+                                {% else %}
+                                    <td style="border: 1px solid black; padding: 5px" align="center"> Not Submitted</td>
+                                {% endif %}
+                                <td style="border: 1px solid black; padding: 5px"
+                                    align="center"> {{ assignment.grade }}/{{ assignment.grade_points }} </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        {% endif %}
+
+        <div class="section">
+            {% if req_specific_assignment %}
+                <div class="section-header">
+                    <h3> Assignment - {{ assignment_data.name }} </h3>
+                    <div class="section-title">
+                        {% if assignment_data.assignmentgrades.submitted_status == 1 %}
+                            <span class="green"> Submitted </span>
+                        {% else %}
+                            <span class="red"> Not Submitted </span>
+                        {% endif %}
+                        <span>
+                            Grade Obtained: {{ assignment_data.assignmentgrades.grade }}/{{ assignment_data.grade_points }}
+                        </span>
+                    </div>
+                </div>
+                <h4> Document: <a
+                        href="{% url 'download' %}?assignment_id={{ assignment_data.id }}"> {{ assignment_data.assignment_doc.name }} </a>
+                </h4>
+                {% if assignment_data.assignmentgrades.submitted_status == 1 %}
+                    <h4> Submitted Document: <a
+                            href="{% url 'download' %}?assignmentgrade_id={{ assignment_data.assignmentgrades.id }}"> {{ assignment_data.assignmentgrades.assignment_doc.name }} </a>
+                    </h4>
+                {% endif %}
+                <form action="{% url 'student_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment_data.id }}&assignmentgrade_id={{ assignment_data.assignmentgrades.id }}&upload_doc=True"
+                      method="POST" enctype="multipart/form-data"> {% csrf_token %}
+                    <input type="file" name="assignment_doc" placeholder="Select a PDF" required/>
+                    <button type="submit">Submit Assignment</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
 
     {% if msg %}
         <script>

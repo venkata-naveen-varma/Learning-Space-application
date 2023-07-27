@@ -6,15 +6,16 @@
     <div class="login-page">
         <form action="{% url 'instructor_signup' %}" method="POST"> {% csrf_token %}
             <span class="title">Instructor Signup</span>
-            <label> Firstname </label>
+            <br>
+{#            <label> Firstname </label>#}
             <input type="text" name="first_name" placeholder="Enter your first_name" required/> <br> <br>
-            <label> Lastname: </label>
+{#            <label> Lastname: </label>#}
             <input type="text" name="last_name" placeholder="Enter your last_name" required/> <br> <br>
-            <label> Email/Username: </label>
+{#            <label> Email/Username: </label>#}
             <input type="email" name="email" placeholder="Enter your email" required/> <br> <br>
-            <label> Password: </label>
+{#            <label> Password: </label>#}
             <input type="password" name="password1" placeholder="Enter your password" required/> <br> <br>
-            <label> Re-type Password: </label>
+{#            <label> Re-type Password: </label>#}
             <input type="password" name="password2" placeholder="Re-type your password" required/> <br> <br>
 
             <button type="submit">SignUp</button>
