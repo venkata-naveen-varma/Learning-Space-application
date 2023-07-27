@@ -1,13 +1,15 @@
-.login-page{
+.login-page {
     display: flex;
 }
-.login-page .title{
+
+.login-page .title {
     color: #154cff;
     font-size: 24px;
     align-self: center;
     font-weight: 700;
 }
-.login-page form{
+
+.login-page form {
     align-items: flex-start;
     display: flex;
     flex-direction: column;
@@ -19,11 +21,11 @@
     -moz-box-shadow: 7px 7px 11px 0px rgba(0, 0, 0, 0.75);
 }
 
-.login-page .login-form{
+.login-page .login-form {
     align-items: center;
 }
 
-.login-page input{
+.login-page input:not([type="file"]){
     /*margin: 10px;*/
     /*border: none;*/
     /*border-bottom: 1px solid #000000;*/
@@ -43,12 +45,20 @@
     padding: 0 10px;
     width: 300px;
     height: 30px;
-    /*background: linear-gradient(89.1deg,rgba(0,0,255,0.10196078431372549),rgba(255,0,0,0.10196078431372549));*/
-    box-shadow: 5px 5px 10px -2px rgba(0,0,0,0.058823529411764705);
+    background: linear-gradient(89.1deg, rgba(0, 0, 255, 0.1), rgba(0, 252, 241, 0.1));
+    box-shadow: 5px 5px 10px -2px rgba(0, 0, 0, 0.058823529411764705);
     border-radius: 45px;
     transition: all .2s ease-in-out;
+
+
+    font-style: normal;
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 18px;
+    color: #000000;
 }
-.login-page button{
+
+.login-page button {
     width: 150px;
     margin: 10px;
     padding: 10px;
@@ -60,33 +70,29 @@
     border-radius: 6px;
     outline: none;
 }
-.login-page a{
+
+.login-page a {
     text-decoration: none;
     color: #ffffff;
 }
-.login-page input:focus{
-    background:white ;
+
+.login-page input:focus {
+    background: white;
 }
 
 .login-page button:hover {
-  background: #1298ff;
-}
-.login-page input{
-  font-style: normal;
-  font-weight: 500;
-  font-size: 15px;
-  line-height: 18px;
-  color: grey;
+    background: #1298ff;
 }
 
 .login-page input::placeholder {
-  color: grey;
+    color: grey;
 }
 
 .login-page input:focus::placeholder {
-  color: grey;
+    color: grey;
 }
-.login-page .row{
+
+.login-page .row {
     display: flex;
     flex-direction: row;
     color: grey;

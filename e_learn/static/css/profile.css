@@ -1,11 +1,96 @@
+.profile {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border-radius: 10px;
+    margin: 10px;
+
+    box-shadow: 2px 3px 10px 0px rgba(0, 0, 0, 0.71);
+    -webkit-box-shadow: 2px 3px 10px 0px rgba(0, 0, 0, 0.71);
+    -moz-box-shadow: 2px 3px 10px 0px rgba(0, 0, 0, 0.71);
+}
+.profile >div{
+    margin: 5px;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 4px;
+}
+
+.profile-header .profile-title a {
+    text-decoration: none;
+    padding: 5px;
+    width: 250px;
+    background-color: #1298ff;
+    border-radius: 20px;
+    transition: all .2s ease-in-out;
+    color: #ffffff;
+}
+
+.profile-header .profile-title a:hover {
+    background: #7fbff6;
+}
+
+.profile input {
+
+    outline: none;
+    border: none;
+    padding: 0 10px;
+    width: 300px;
+    height: 30px;
+    background: linear-gradient(89.1deg, rgba(0, 0, 255, 0.1), rgba(0, 252, 241, 0.1));
+    box-shadow: 5px 5px 10px -2px rgba(0, 0, 0, 0.058823529411764705);
+    border-radius: 45px;
+    transition: all .2s ease-in-out;
+
+    font-style: normal;
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 18px;
+    color: #000000;
+}
+.profile input:focus{
+    background:white ;
+}
+.profile input::placeholder {
+    color: grey;
+}
+.profile button[type="submit"]{
+    width: 150px;
+    margin: 10px;
+    padding: 10px;
+    border: none;
+    align-self: center;
+    background-color: #154cff;
+    color: #ffffff;
+    cursor: pointer;
+    border-radius: 6px;
+    outline: none;
+    font-size: 10px;
+    height: 33px;
+}
+.profile a{
+    padding: 12px 50px;
+    margin: 10px;
+    border: none;
+    align-self: center;
+    background-color: #154cff;
+    text-decoration: none;
+    color: #ffffff;
+    cursor: pointer;
+    border-radius: 6px;
+    outline: none;
+    font-size: 10px;
+}
 .grid-container {
     display: grid;
     grid-template-columns: 1fr;
+    /*margin: 4px;*/
 }
 
 .grid-item {
-    border: 1px solid #ddd;
-    border-color: #154cff;
     padding: 10px;
-    margin: 2px;
+    margin: 3px;
 }

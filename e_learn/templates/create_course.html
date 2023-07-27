@@ -4,12 +4,13 @@
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}"/>
     <div class="login-page">
-    <form action="{% url 'create_course' %}" method="POST"> {% csrf_token %}
+    <form class="login-form" action="{% url 'create_course' %}" method="POST"> {% csrf_token %}
         <span class="title">Create Course</span>
-        <label> Course Name </label>
+        <br>
+{#        <label> Course Name </label>#}
         <input type="text" name="name" placeholder="Enter course name" required/> <br> <br>
-        <label> Course Description </label>
-        <input type="text" name="course_description" placeholder="About the course"/> <br> <br>
+{#        <label> Course Description </label>#}
+        <input type="text" name="course_description" placeholder="Description about the course"/> <br> <br>
         <button type="submit">Create Course</button>
         <button type="button">
                 <a href="{% url 'institution_home' %}">Cancel</a>

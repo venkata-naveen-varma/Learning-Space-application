@@ -15,8 +15,10 @@
         {% else %}
             <p>Total Grade: Not yet evaluated </p>
         {% endif %}
-        <a href="{% url 'student_course_details' %}?course_id={{ course_details.id }}&request_notes=True">Lectures</a>
-        <a href="{% url 'student_course_details' %}?course_id={{ course_details.id }}&request_assignments=True">Assignments</a>
+        <div class="course-list-header">
+            <a href="{% url 'student_course_details' %}?course_id={{ course_details.id }}&request_notes=True">Lectures</a>
+            <a href="{% url 'student_course_details' %}?course_id={{ course_details.id }}&request_assignments=True">Assignments</a>
+        </div>
         <br>
 
         {# Lecure notes #}
@@ -25,7 +27,7 @@
                 <br>
                 <div class="course-list-page">
                     <span class="title">Lectures</span>
-                    <table>
+                    <table class="table-class">
                         <thead>
                         <tr>
                             <th scope="col" style="border: 1px solid black;">Lecture Name</th>
@@ -95,26 +97,36 @@
             {% endif %}
         {% endif %}
 
-        {% if req_specific_assignment %}
-            <h3> Assignment - {{ assignment_data.name }} </h3>
-            <h4> Document: <a
-                    href="{% url 'download' %}?assignment_id={{ assignment_data.id }}"> {{ assignment_data.assignment_doc.name }} </a>
-            </h4>
-            <h4> Grade Obtained: {{ assignment_data.assignmentgrades.grade }}/{{ assignment_data.grade_points }}</h4>
-            {% if assignment_data.assignmentgrades.submitted_status == 1 %}
-                <h4> Status: Submitted </h4>
-                <h4> Submitted Document: <a
-                        href="{% url 'download' %}?assignmentgrade_id={{ assignment_data.assignmentgrades.id }}"> {{ assignment_data.assignmentgrades.assignment_doc.name }} </a>
+        <div class="section">
+            {% if req_specific_assignment %}
+                <div class="section-header">
+                    <h3> Assignment - {{ assignment_data.name }} </h3>
+                    <div class="section-title">
+                        {% if assignment_data.assignmentgrades.submitted_status == 1 %}
+                            <span class="green"> Submitted </span>
+                        {% else %}
+                            <span class="red"> Not Submitted </span>
+                        {% endif %}
+                        <span>
+                            Grade Obtained: {{ assignment_data.assignmentgrades.grade }}/{{ assignment_data.grade_points }}
+                        </span>
+                    </div>
+                </div>
+                <h4> Document: <a
+                        href="{% url 'download' %}?assignment_id={{ assignment_data.id }}"> {{ assignment_data.assignment_doc.name }} </a>
                 </h4>
-            {% else %}
-                <h4> Status: Not Submitted </h4>
+                {% if assignment_data.assignmentgrades.submitted_status == 1 %}
+                    <h4> Submitted Document: <a
+                            href="{% url 'download' %}?assignmentgrade_id={{ assignment_data.assignmentgrades.id }}"> {{ assignment_data.assignmentgrades.assignment_doc.name }} </a>
+                    </h4>
+                {% endif %}
+                <form action="{% url 'student_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment_data.id }}&assignmentgrade_id={{ assignment_data.assignmentgrades.id }}&upload_doc=True"
+                      method="POST" enctype="multipart/form-data"> {% csrf_token %}
+                    <input type="file" name="assignment_doc" placeholder="Select a PDF" required/>
+                    <button type="submit">Submit Assignment</button>
+                </form>
             {% endif %}
-            <form action="{% url 'student_course_details' %}?course_id={{ course_details.id }}&assignment_id={{ assignment_data.id }}&assignmentgrade_id={{ assignment_data.assignmentgrades.id }}&upload_doc=True"
-                  method="POST" enctype="multipart/form-data"> {% csrf_token %}
-                <input type="file" name="assignment_doc" placeholder="Select a PDF" required/>
-                <button type="submit">Submit Assignment</button>
-            </form>
-        {% endif %}
+        </div>
     </div>
 
     {% if msg %}
